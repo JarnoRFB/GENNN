@@ -1,15 +1,15 @@
 {
   "id": 0,
+  "datadir": "dir",
+  "logdir": "dir",
+  "validate_each_n_steps": 100,
+  "max_number_of_iterations": 10,
+  "max_runtime": 10,
   "hyperparameters":
   {
     "learningrate": 1,
     "optimizer": "adam",
-    "batchsize": 1,
-    "validate_each_n_steps": 100,
-    "datadir": "dir",
-    "logdir": "dir",
-    "max_number_of_iterations": 10,
-    "max_runtime": 10
+    "batchsize": 1
   },
   "layers":
   [
@@ -41,8 +41,8 @@
       },
       "strides":
       {
-        "x": 1,
         "y": 1,
+        "x": 1,
         "inchannels": 1,
         "batch": 1
       }
