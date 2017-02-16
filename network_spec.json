@@ -14,7 +14,7 @@
   "layers":
   [
     {
-      "type": "convlayer",
+      "type": "conv_layer",
       "convolution": {
         "filter": {
           "height": 1,
@@ -32,7 +32,7 @@
       }
     },
     {
-      "type": "maxpoollayer",
+      "type": "maxpool_layer",
       "kernel":
       {
         "batch": 1,
@@ -48,7 +48,7 @@
       }
     },
     {
-      "type": "feedforwardlayer",
+      "type": "feedforward_layer",
       "size": 1024
     }
 
