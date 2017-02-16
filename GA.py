@@ -1,31 +1,38 @@
 import random
 import numpy as np
 
+#Missing: Not Tested
 
 class GA:
-    def __init__(self, population_cnt, rate_mutation, rate_crossover, sampleCandidate):
-        # INt
+    def __init__(self, population_cnt: int , rate_mutation: float, rate_crossover: float, sampleCandidate):
+        #
         self._population_size = population_cnt
-        # double
         self._rate_mutation = rate_mutation
         self._rate_crossover = rate_crossover
-        # Candidate Class
         self._sampleCandidate = sampleCandidate
-        # Candidaten einer Population
+
+        # Create Random start population
         self._population = list(self._sampleCandidate() for i in range(self._population_size))
 
         self.generation = 0
         self.best_candidate = None
-        self.fitness_avg = 0
-        self.diversity = 0
+        self.fitness_avg = None
+        self.diversity = None
 
     def mutate(self):
+        self.best_candidate = None
+        self.fitness_avg = None
+        self.diversity = None
+
         for candidate in self._population:
             candidate.mutation(self._rate_mutation)
 
     def crossover(self):
         if self._rate_crossover == 0:
             return
+        self.best_candidate = None
+        self.fitness_avg = None
+        self.diversity = None
         # Number of Crossover operations
         crossovers = int((self._population_size * self._rate_crossover) / 2)
         for i in range(crossovers):
@@ -40,20 +47,26 @@ class GA:
     def evaluate(self, calc_diversity):
         self.diversity = 0
         self.fitness_avg = 0
+        self.generation += 1
         # Here we can make Multi computing
-        # Compute eacht Fitness
-        for candidate in self._population:
-            candidate.evaluate()
-            self.fitness_avg += candidate.get_fitness()
-        self.fitness_avg /= len(self._population)
-        # Compute Diversity if wanted
 
-        divs = 0  # Lazy
+        # Set: best_candidate and fitness_avg
+        for candidate in self._population:
+            self.fitness_avg += candidate.get_fitness()
+            if self.best_candidate is None or candidate.get_fitness() > self.best_candidate.get_fitness():
+                self.best_candidate = candidate
+        self.fitness_avg /= len(self._population)
+
+        # Compute Diversity if wanted
         if calc_diversity:
-            for idx_from, candidate_from in enumerate(self._population):
-                for candidate_to in self._population[idx_from:]:
-                    self.diversity = candidate_from.get_diversity(candidate_to)
-                    divs += 1
+            self._calc_diversity()
+
+    def _calc_diversity(self):
+        divs = 0
+        for idx_from, candidate_from in enumerate(self._population):
+            for candidate_to in self._population[idx_from:]:
+                self.diversity = candidate_from.get_diversity(candidate_to)
+                divs += 1
         self.diversity /= divs
 
     def selection(self, strategy="Tournament", tournament_win_rate=0.75, tournament_size=10):
@@ -66,24 +79,17 @@ class GA:
         new_population = list()
         for tournement in range(self._population_size):
             # Create tournement candidates
+            sorted_candidates = sorted(self._population, key=lambda x: x.get_fitness())
+
             idx_candidates = [i for i in range(self._population_size)]
             random.shuffle(idx_candidates)
-            tournament_candidates = list()
-            for candidate_idx in idx_candidates:
-                tournament_candidates.append(self._population[candidate_idx])
-            #
 
-            best_candidate = None
-            worst_candidate = None
-            for candidate in tournament_candidates:
-                # For best
-                if best_candidate is None or best_candidate.get_fitness() < candidate.get_fitness():
-                    best_candidate = candidate
-                # For badest
-                if worst_candidate is None or worst_candidate.get_fitness() > candidate.get_fitness():
-                    worst_candidate = candidate
-                if random.random() <= win_rate:
-                    new_population.append(best_candidate)
-                else:
-                    new_population.append(worst_candidate)
+
+            best_candidate_idx = max(idx_candidates[0:tournement_size])
+            worst_candidate_idx = min(idx_candidates[0:tournement_size])
+
+            if random.random() <= win_rate:
+                new_population.append(sorted_candidates[best_candidate_idx])
+            else:
+                new_population.append(sorted_candidates[worst_candidate_idx])
         self._population = new_population
