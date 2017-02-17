@@ -1,6 +1,6 @@
 import random
 import numpy as np
-
+import copy
 #Missing: Not Tested
 
 class GA:
@@ -27,7 +27,7 @@ class GA:
         for candidate in self._population:
             candidate.mutation(self._rate_mutation)
 
-    def crossover(self):
+    def crossover(self,strategy = "onePointSwap"):
 
         if self._rate_crossover == 0:
             return
@@ -43,7 +43,7 @@ class GA:
             while candidate1 == candidate2:
                 candidate2 = random.randint(0, len(self._population) - 1)
 
-            self._population[candidate1].crossover(self._population[candidate2])
+            self._population[candidate1].crossover(self._population[candidate2],strategy)
 
     def evaluate(self, calc_diversity):
         self.diversity = 0
@@ -77,20 +77,18 @@ class GA:
     def _selection_tournament(self, win_rate=0.75, tournement_size=10):
         new_population = list()
         sorted_candidates = sorted(self._population, key=lambda x: x.get_fitness())
+        #Small Hack to get the2 best Candidates in next Poplation for sure
 
         for tournement in range(self._population_size):
             # Create tournement candidates
-
-
             idx_candidates = [i for i in range(self._population_size)]
             random.shuffle(idx_candidates)
-
 
             best_candidate_idx = max(idx_candidates[0:tournement_size])
             worst_candidate_idx = min(idx_candidates[0:tournement_size])
 
             if random.random() <= win_rate:
-                new_population.append(sorted_candidates[best_candidate_idx])
+                new_population.append(copy.deepcopy(sorted_candidates[best_candidate_idx]))
             else:
-                new_population.append(sorted_candidates[worst_candidate_idx])
+                new_population.append(copy.deepcopy(sorted_candidates[worst_candidate_idx]))
         self._population = new_population
