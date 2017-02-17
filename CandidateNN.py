@@ -1,7 +1,11 @@
 import json
 import random
+
+
 class CandidateNN:
-    _fitness = None
+
+
+    self._fitness = None
 
     def __init__(self, network_json):
         self.data = json.loads(network_json)

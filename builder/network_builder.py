@@ -1,9 +1,11 @@
 import tensorflow as tf
+import numpy as np
+import matplotlib.pyplot as plt
 import json
 from builder.helper import get_tensor_size
 from tensorflow.examples.tutorials.mnist import input_data
 import os
-
+import datetime
 
 mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
 
@@ -14,8 +16,11 @@ class Network:
     def __init__(self, json_network_spec):
 
         self.network_spec = json.loads(json_network_spec)
+        if self.network_spec['max_number_of_iterations'] % self.network_spec['validate_each_n_steps'] != 0:
+            raise(ValueError('max_number_of_iterations is no multiple of validate_each_n_steps.'))
         self.x = None
         self.y_ = None
+        self.loss = None
         self.accuracy = None
         self.train_op = None
         self._build_network()
@@ -26,24 +31,40 @@ class Network:
         Returns:
             The accuracy on the test data.
         """
-        writer = tf.summary.FileWriter(self.network_spec['logdir'])
+
         merged_summary = tf.summary.merge_all()
+        # Time when starting the training.
+        start_time = datetime.datetime.now()
+        # Arrays for storying intermediate results.
+        losses = np.zeros(self.network_spec['max_number_of_iterations'] // self.network_spec['validate_each_n_steps'])
+        accuracies = np.zeros(self.network_spec['max_number_of_iterations'] // self.network_spec['validate_each_n_steps'])
         with tf.Session() as sess:
+            writer = tf.summary.FileWriter(self.network_spec['logdir'], graph=sess.graph)
             sess.run(tf.global_variables_initializer())
-            writer.add_graph(sess.graph)
             for i in range(self.network_spec['max_number_of_iterations']):
                 batch = mnist.train.next_batch(self.network_spec['hyperparameters']['batchsize'])
                 self.train_op.run(feed_dict={self.x: batch[0], self.y_: batch[1]})
-                if i % 10 == 0:
-                    summary = sess.run(merged_summary, feed_dict={self.x: batch[0], self.y_: batch[1]})
-                    writer.add_summary(summary, i)
+                if i % self.network_spec['validate_each_n_steps'] == 0:
+                    # Write summary and save data for plots.
+                    summary, accuracy_val, loss_val = sess.run([merged_summary, self.accuracy, self.loss],
+                                                               feed_dict={self.x: batch[0], self.y_: batch[1]})
+                    writer.add_summary(summary, global_step=i)
+                    losses[int(i / self.network_spec['validate_each_n_steps'])] = loss_val
+                    accuracies[int(i / self.network_spec['validate_each_n_steps'])] = accuracy_val
+
+                    # Check whether training has taken too long.
+                    if (datetime.datetime.now() - start_time).seconds // 60 > self.network_spec['max_runtime']:
+                        break
             results = sess.run([self.accuracy],
-                                     feed_dict={self.x: mnist.test.images, self.y_: mnist.test.labels})
+                                feed_dict={self.x: mnist.test.images, self.y_: mnist.test.labels})
+            # Save plots for losses and accuracies.
+            self._plot(loss=losses, accuracy=accuracies)
 
             extended_spec = self._extend_network_spec(accuracy=float(results[0]))
 
             # Write extended to logdir.
             self._write_to_logdir(extended_spec, 'network.json')
+
             return extended_spec
 
     def feedforward_layer(self, input_tensor, layer_number):
@@ -75,7 +96,7 @@ class Network:
         layer_spec = self.network_spec['layers'][layer_number]
         filter_shape = (layer_spec['convolution']['filter']['height'],
                         layer_spec['convolution']['filter']['width'],
-                        layer_spec['convolution']['filter']['inchannels'],
+                        int(input_tensor.get_shape()[-1]),
                         layer_spec['convolution']['filter']['outchannels'])
         filter_strides = (layer_spec['convolution']['strides']['inchannels'],
                           layer_spec['convolution']['strides']['x'],
@@ -155,12 +176,12 @@ class Network:
         """
 
         with tf.name_scope('loss'):
-            xent = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(readout, y_))
-            tf.summary.scalar('cross_entropy', xent)
+            self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(readout, y_))
+            tf.summary.scalar('cross_entropy', self.loss)
             correct_prediction = tf.equal(tf.argmax(readout, 1), tf.argmax(y_, 1))
             self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
             tf.summary.scalar('accuracy', self.accuracy)
-        return xent
+        return self.loss
 
     def _build_train_op(self, loss):
         """Build the training op.
@@ -219,3 +240,20 @@ class Network:
         extended_spec['results'] = kwargs
         extended_json_spec = json.dumps(extended_spec)
         return extended_json_spec
+
+    def _plot(self, **kwargs):
+        """Save plots in logdir.
+
+        Keyword Args:
+            A mapping between a label and a numpy array to be plotted.
+        """
+        steps = np.arange(
+            self.network_spec['max_number_of_iterations'] // self.network_spec['validate_each_n_steps']
+        ) * self.network_spec['validate_each_n_steps']
+        for y_label, y_vals in kwargs.items():
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.plot(steps, y_vals)
+            ax.set_xlabel('batch')
+            ax.set_ylabel(y_label)
+            fig.savefig(self.network_spec['logdir'] + y_label + '.png', format='png')
