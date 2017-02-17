@@ -4,15 +4,15 @@ import numpy as np
 #Missing: Not Tested
 
 class GA:
-    def __init__(self, population_cnt: int , rate_mutation: float, rate_crossover: float, sampleCandidate):
+    def __init__(self, population_cnt: int, rate_mutation: float, rate_crossover: float, sample_candidate):
         #
         self._population_size = population_cnt
         self._rate_mutation = rate_mutation
         self._rate_crossover = rate_crossover
-        self._sampleCandidate = sampleCandidate
+        self._sample_candidate = sample_candidate
 
         # Create Random start population
-        self._population = list(self._sampleCandidate() for i in range(self._population_size))
+        self._population = list(self._sample_candidate() for i in range(self._population_size))
 
         self.generation = 0
         self.best_candidate = None
@@ -28,6 +28,7 @@ class GA:
             candidate.mutation(self._rate_mutation)
 
     def crossover(self):
+
         if self._rate_crossover == 0:
             return
         self.best_candidate = None
@@ -42,7 +43,7 @@ class GA:
             while candidate1 == candidate2:
                 candidate2 = random.randint(0, len(self._population) - 1)
 
-        self._population[candidate1].crossover(self._population[candidate2])
+            self._population[candidate1].crossover(self._population[candidate2])
 
     def evaluate(self, calc_diversity):
         self.diversity = 0
@@ -65,21 +66,21 @@ class GA:
         divs = 0
         for idx_from, candidate_from in enumerate(self._population):
             for candidate_to in self._population[idx_from:]:
-                self.diversity = candidate_from.get_diversity(candidate_to)
+                self.diversity += candidate_from.get_diversity(candidate_to)
                 divs += 1
         self.diversity /= divs
 
     def selection(self, strategy="Tournament", tournament_win_rate=0.75, tournament_size=10):
         if strategy == "Tournament":
-            self._selection_tournement(tournament_win_rate, tournament_size)
+            self._selection_tournament(tournament_win_rate, tournament_size)
 
-    #IMPROVMENT: Create a List sorted by get_fitness(), create a 2 list with tournement_size random indizes
-    # and append the higest or lowest iodize
-    def _selection_tournement(self, win_rate=0.75, tournement_size=10):
+    def _selection_tournament(self, win_rate=0.75, tournement_size=10):
         new_population = list()
+        sorted_candidates = sorted(self._population, key=lambda x: x.get_fitness())
+
         for tournement in range(self._population_size):
             # Create tournement candidates
-            sorted_candidates = sorted(self._population, key=lambda x: x.get_fitness())
+
 
             idx_candidates = [i for i in range(self._population_size)]
             random.shuffle(idx_candidates)
