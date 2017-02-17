@@ -1,7 +1,7 @@
 {
   "id": 0,
   "datadir": "dir",
-  "logdir": "dir",
+  "logdir": "/tmp/gennn/",
   "validate_each_n_steps": 100,
   "max_number_of_iterations": 10,
   "max_runtime": 10,
@@ -19,6 +19,7 @@
         "filter": {
           "height": 1,
           "width": 1,
+          "inchannels": 1,
           "outchannels": 1
         },
         "strides": {
@@ -35,9 +36,10 @@
       "type": "maxpool_layer",
       "kernel":
       {
-        "batch": 1,
         "height": 1,
-        "width": 1
+        "width": 1,
+        "inchannels": 1,
+        "outchannels": 1
       },
       "strides":
       {
@@ -49,7 +51,8 @@
     },
     {
       "type": "feedforward_layer",
-      "size": 1024
+      "size": 1024,
+      "activation_function": "relu"
     }
 
   ]
