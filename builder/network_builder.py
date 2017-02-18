@@ -7,7 +7,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 import os
 import datetime
 
-mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
+mnist = input_data.read_data_sets('MNIST_data', one_hot=False, reshape=False)
 
 
 class Network:
@@ -140,20 +140,19 @@ class Network:
         Construct all layers according to the JSON specification. Then project
         everything on a readout layer. Then build loss and the training op.
         """
-        self.x = tf.placeholder(tf.float32, shape=[None, 784], name='input')
-        self.y_ = tf.placeholder(tf.float32, shape=[None, 10], name='labels')
-        current_tensor = self._build_layers()
+        self.x = tf.placeholder(tf.float32, shape=[None, 28, 28, 1], name='input')
+        self.y_ = tf.placeholder(tf.int32, shape=[None], name='labels')
+        current_tensor = self._build_layers(self.x)
         readout = self._build_readout_layer(current_tensor, n_classes=10)
         loss = self._build_loss(readout, self.y_)
         self.train_op = self._build_train_op(loss)
 
-    def _build_layers(self):
+    def _build_layers(self, current_tensor):
         """Build layers based on the JSON specification.
 
         Returns:
-            tensor: The output form the last layer.
+            tensor: The output from the last layer.
         """
-        current_tensor = tf.reshape(self.x, [-1, 28, 28, 1])
         for i, layer_spec in enumerate(self.network_spec['layers']):
             current_tensor = getattr(self, layer_spec['type'])(current_tensor, layer_number=i)
         return current_tensor
@@ -164,21 +163,21 @@ class Network:
             readout = self._feedforward_step(input_tensor, n_classes)
         return readout
 
-    def _build_loss(self, readout, y_):
+    def _build_loss(self, readout, labels):
         """Build the layer including the loss and the accuracy.
 
         Args:
             readout (tensor): The readout layer. A probability distribution over the classes.
-            y_ (tensor): Labels as one-hot vectors.
+            labels (tensor): Labels as integers.
 
         Returns:
             tensor: The loss tensor (cross entropy).
         """
 
         with tf.name_scope('loss'):
-            self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=readout, labels=y_))
+            self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=readout, labels=labels))
             tf.summary.scalar('cross_entropy', self.loss)
-            correct_prediction = tf.equal(tf.argmax(readout, 1), tf.argmax(y_, 1))
+            correct_prediction = tf.nn.in_top_k(readout, labels, 1)
             self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
             tf.summary.scalar('accuracy', self.accuracy)
         return self.loss
