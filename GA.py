@@ -1,7 +1,5 @@
 import random
-import numpy as np
 import copy
-#Missing: Not Tested
 
 class GA:
     def __init__(self, population_cnt: int, rate_mutation: float, rate_crossover: float, sample_candidate):
@@ -50,7 +48,6 @@ class GA:
         self.fitness_avg = 0
         self.generation += 1
         # Here we can make Multi computing
-
         # Set: best_candidate and fitness_avg
         for candidate in self._population:
             self.fitness_avg += candidate.get_fitness()
@@ -77,7 +74,6 @@ class GA:
     def _selection_tournament(self, win_rate=0.75, tournement_size=10):
         new_population = list()
         sorted_candidates = sorted(self._population, key=lambda x: x.get_fitness())
-        #Small Hack to get the2 best Candidates in next Poplation for sure
 
         for tournement in range(self._population_size):
             # Create tournement candidates
