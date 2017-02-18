@@ -96,7 +96,7 @@ class Network:
         layer_spec = self.network_spec['layers'][layer_number]
         filter_shape = (layer_spec['convolution']['filter']['height'],
                         layer_spec['convolution']['filter']['width'],
-                        int(input_tensor.get_shape()[-1]),
+                        int(input_tensor.get_shape()[-1]), # inchannels
                         layer_spec['convolution']['filter']['outchannels'])
         filter_strides = (layer_spec['convolution']['strides']['inchannels'],
                           layer_spec['convolution']['strides']['x'],
@@ -176,7 +176,7 @@ class Network:
         """
 
         with tf.name_scope('loss'):
-            self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(readout, y_))
+            self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=readout, labels=y_))
             tf.summary.scalar('cross_entropy', self.loss)
             correct_prediction = tf.equal(tf.argmax(readout, 1), tf.argmax(y_, 1))
             self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
