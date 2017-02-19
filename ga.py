@@ -41,7 +41,7 @@ class GA:
             while candidate1 == candidate2:
                 candidate2 = random.randint(0, len(self._population) - 1)
 
-            self._population[candidate1].crossover(self._population[candidate2],strategy)
+            self._population[candidate1].crossover(crossover_rate=self._rate_crossover,other_candidate=self._population[candidate2],strategy=strategy)
 
     def evaluate(self, calc_diversity):
         self.diversity = 0

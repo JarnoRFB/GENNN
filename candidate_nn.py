@@ -22,6 +22,114 @@ class CandidateNN:
                          'RMSPropOptimizer', 'GradientDescentOptimizer')
     ACTIVATION_CHOICES = ('relu', 'relu6', 'sigmoid', 'tanh', 'crelu', 'elu', 'softplus', 'softsign')
     LAYER_TYPES = ("conv_layer", "maxpool_layer", "feedforward_layer")
+    OPTIMIZING_PARMS = {
+        'conv_layer':
+        [
+            {'parms':
+                {'hierarchi': ['convolution', 'filter', 'height'],
+                 'min': 1,
+                 'max': 5,
+                 'type': 'int'}
+            },
+            {'parms':
+                {'hierarchi': ['convolution', 'filter', 'width'],
+                 'min': 1,
+                 'max': 5,
+                 'type': 'int'}
+            },
+            {'parms':
+                {'hierarchi': ['convolution', 'filter', 'outchannels'],
+                 'min': 1,
+                 'max': 64,
+                 'type': 'int'}
+            },
+            {'parms':
+                 {'hierarchi': ['convolution', 'strides', 'x'],
+                  'min': 1,
+                  'max': 2,
+                  'type': 'int'}
+            },
+            {'parms':
+                 {'hierarchi': ['convolution', 'strides', 'y'],
+                  'min': 1,
+                  'max': 2,
+                  'type': 'int'}
+             },
+            {'parms':
+                 {'hierarchi': ['convolution', 'strides', 'inchannels'],
+                  'min': 1,
+                  'max': 1,
+                  'type': 'int'}
+             },
+            {'parms':
+                 {'hierarchi': ['convolution', 'strides', 'batch'],
+                  'min': 1,
+                  'max': 1,
+                  'type': 'int'}
+             },
+        ],
+        'maxpool_layer':
+         [
+             {'parms':
+                  {'hierarchi': ['kernel', 'height'],
+                   'min': 1,
+                   'max': 5,
+                   'type': 'int'}
+              },
+             {'parms':
+                  {'hierarchi': ['kernel', 'width'],
+                   'min': 1,
+                   'max': 5,
+                   'type': 'int'}
+              },
+             {'parms':
+                  {'hierarchi': ['kernel', 'inchannels'],
+                   'min': 1,
+                   'max': 1,
+                   'type': 'int'}
+              },
+             {'parms':
+                  {'hierarchi': ['kernel', 'outchannels'],
+                   'min': 1,
+                   'max': 1,
+                   'type': 'int'}
+              },
+             {'parms':
+                  {'hierarchi': ['strides', 'x'],
+                   'min': 1,
+                   'max': 5,
+                   'type': 'int'}
+              },
+             {'parms':
+                  {'hierarchi': ['strides', 'y'],
+                   'min': 1,
+                   'max': 5,
+                   'type': 'int'}
+              },
+             {'parms':
+                  {'hierarchi': ['strides', 'inchannels'],
+                   'min': 1,
+                   'max': 1,
+                   'type': 'int'}
+              },
+             {'parms':
+                  {'hierarchi': ['strides', 'batch'],
+                   'min': 1,
+                   'max': 1,
+                   'type': 'int'}
+              }
+         ],
+        'feedforward_layer':
+        [
+            {'parms':
+                 {'hierarchi': ['size'],
+                  'min': 256,
+                  'max': 2048,
+                  'type': 'int'}
+             }
+        ]
+    }
+
     ACCURACY_WEIGHT = 20
     LAYER_CNT_WEIGHT = 2
     MAX_LAYERS = 3
@@ -34,10 +142,66 @@ class CandidateNN:
             network_spec = self._create_random_network()
         self.network_spec = network_spec
 
-    def crossover(self, other_candidate, strategy='onePointSwap'):
+    def crossover(self, crossover_rate, other_candidate, strategy='uniform_crossover', uniform_method='swap'):
         self._fitness = None
-        if strategy == 'onePointSwap':
-            self._crossing_one_point_swap(other_candidate)
+
+        if strategy == 'uniform_crossover':
+            self._crossover_uniform(crossver_rate=crossover_rate,
+                                    other_candidate= other_candidate,
+                                    uniform_method=uniform_method)
+        else:
+            raise ValueError('not implemented crossover strategy')
+
+
+
+    def _crossover_uniform(self, crossver_rate, other_candidate, uniform_method):
+        """Performs a unifrom Crossover between two Candidates"""
+        if(uniform_method == 'swap'):
+            min_layers = min(len(self.network_spec['layers']),len(other_candidate.network_spec['layers']))
+            for layer_idx, layer in enumerate(self.network_spec['layers'][:min_layers]):
+                layer_dict = layer
+                other_layer_dict = other_candidate.network_spec['layers'][layer_idx]
+
+                if (random.uniform(0, 1) <= crossver_rate):
+                    layer_dict['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
+
+                if(layer_dict['type'] == other_layer_dict['type']):
+                    self._swap_values(layer_dict,other_layer_dict, crossver_rate)
+
+
+        else:
+            raise ValueError('not implemented uniform_crossover_method')
+    def _swap_values(self, dict, other_dict,rate):
+        """Swaps Properties between two Layers of the same type with Propapility rate"""
+        for parm in self.OPTIMIZING_PARMS[dict['type']]:
+            if random.uniform(0,1)<=rate:
+                parm_h = parm['parms']['hierarchi']
+                if len(parm_h) == 1:
+                    # Save old own
+                    tmp = dict[parm_h[0]]
+                    # own in other
+                    dict[parm_h[0]] = \
+                        other_dict[parm_h[0]]
+                    # saved in own
+                    other_dict[parm_h[0]] = tmp
+                elif len(parm_h) == 2:
+                    # Save old own
+                    tmp = dict[parm_h[0]][parm_h[1]]
+                    # own in other
+                    dict[parm_h[0]][parm_h[1]] = \
+                        other_dict[parm_h[0]][parm_h[1]]
+                    # saved in own
+                    other_dict[parm_h[0]][parm_h[1]] = tmp
+                elif len(parm_h) == 3:
+                    # Save old own
+                    tmp = dict[parm_h[0]][parm_h[1]][parm_h[2]]
+                    # own in other
+                    dict[parm_h[0]][parm_h[1]][parm_h[2]] = \
+                        other_dict[parm_h[0]][parm_h[1]][parm_h[2]]
+                    # saved in own
+                    other_dict[parm_h[0]][parm_h[1]][parm_h[2]] = tmp
+                else:
+                    raise ValueError('length of hierarchi must 1,2 or 3')
 
     def mutation(self, mutation_rate):
         # TODO: Check the mutation of a layer and the mutation of properties, layer mutation can hide value mutation
@@ -63,37 +227,39 @@ class CandidateNN:
         """
         if(random.uniform(0,1) <= mutation_rate):
             layer_dict['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
+        for parms in self.OPTIMIZING_PARMS[layer_dict['type']]:
+            if parms['parms']['max'] == parms['parms']['min']:
+                break
+            parm_h = parms['parms']['hierarchi']
+            variance = (parms['parms']['max'] - parms['parms']['min']) / 2
+            if variance == 0 :
+                variance = 1
+            if parms['parms']['type'] == 'int':
+                variance = int(variance)
 
-        if(layer_dict['type']=='conv_layer'):
-            if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['convolution']['filter']['height'] = self._mutation_value_strategy(layer_dict['convolution']['filter']['height'],2)
-            if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['convolution']['filter']['width'] = self._mutation_value_strategy(layer_dict['convolution']['filter']['width'],2)
-            if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['convolution']['filter']['outchannels'] = self._mutation_value_strategy(layer_dict['convolution']['filter']['outchannels'],20)
-            if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['convolution']['strides']['x'] = self._mutation_value_strategy(layer_dict['convolution']['strides']['x'],1)
-            if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['convolution']['strides']['y'] = self._mutation_value_strategy(layer_dict['convolution']['strides']['y'],1)
+            if len(parm_h) == 1:
+                layer_dict[parm_h[0]] = self._mutation_value_strategy(
+                    old_value=layer_dict[parm_h[0]],
+                    variance=variance)
+            elif len(parm_h) == 2:
+                layer_dict[parm_h[0]][parm_h[1]] = self._mutation_value_strategy(
+                                                    old_value=layer_dict[parm_h[0]][parm_h[1]],
+                                                    variance=variance)
+            elif len(parm_h) == 3:
+                layer_dict[parm_h[0]][parm_h[1]][parm_h[2]] = self._mutation_value_strategy(
+                                                        old_value=layer_dict[parm_h[0]][parm_h[1]][parm_h[2]],
+                                                        variance=variance)
+            else:
 
-        elif layer_dict['type'] == 'maxpool_layer':
-            if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['kernel']['height'] = self._mutation_value_strategy(layer_dict['kernel']['height'],2)
-            if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['kernel']['width'] = self._mutation_value_strategy(layer_dict['kernel']['width'],2)
-            if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['strides']['x'] = self._mutation_value_strategy(layer_dict['strides']['x'],2)
-            if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['strides']['y'] = self._mutation_value_strategy(layer_dict['strides']['y'],2)
+                raise ValueError('length of hierarchi must 1,2 or 3')
 
-        elif layer_dict['type'] == 'feedforward_layer':
-            if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['size'] = self._mutation_value_strategy(layer_dict['size'],400)
-    def _mutation_value_strategy(self, old_value, plus_minus_range):
-        return old_value + RangedInt(-plus_minus_range,plus_minus_range).value
+
+    def _mutation_value_strategy(self, old_value, variance):
+        """ sub/add a number between -variance and variance"""
+        return old_value + old_value.__class__(-variance, variance).value
 
     def get_diversity(self, otherCandidate):
-        #print('get_div')
+
         return random.random()
 
     def get_fitness(self):
@@ -113,9 +279,6 @@ class CandidateNN:
         # TODO: get the number of weights as penalty?
         return  1 / (- self.ACCURACY_WEIGHT * math.log(results['accuracy'])
                      + self.LAYER_CNT_WEIGHT * len(self.network_spec['layers']))
-
-    def _crossing_one_point_swap(self, other_candidate):
-        print('')
 
     def _create_random_network(self):
         """Construct a random network specification."""
@@ -147,6 +310,7 @@ class CandidateNN:
 
         for layer_type in layer_types:
             layer_spec = self._create_randomize_layer(layer_type=layer_type)
+            #layer_spec = self._generate_network_layer(type=layer_type)
             # Add layer to the network spec.
             network_spec['layers'].append(layer_spec)
 
@@ -225,7 +389,26 @@ class CandidateNN:
             }
         }
         return layer
-
+    def _generate_network_layer(self, type):
+        # TODO: Implement this!
+        raise Exception("Not implemented")
+        for parms in self.OPTIMIZING_PARMS[type]:
+            parm = parms['parms']
+            parm_h = parm['hierarchi']
+            layer = dict()
+            layer['type'] = type
+            layer['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
+            if len(parm_h) == 1:
+                layer[parm_h[0]] = RangedInt(min=parm['min'], max=parm['max'])
+            elif len(parm_h) == 2:
+                layer[parm_h[0]][parm_h[2]] = RangedInt(min=parm['min'], max=parm['max'])
+            elif len(parm_h) == 3:
+                #layer.update({parm_h[0]:{parm_h[1]:{parm_h[2]:RangedInt(min=parm['min'], max=parm['max'])}}})
+                #layer[parm_h[0]][parm_h[1]][parm_h[2]] = RangedInt(min=parm['min'], max=parm['max'])
+                raise Exception("Not implemented")
+            else:
+                raise ValueError('length of hierarchi must 1,2 or 3')
+        return layer
     def _serialze_network_spec(self):
 
         return RangedJSONEncoder().encode(self.network_spec)
