@@ -40,8 +40,10 @@ class CandidateNN:
             self._crossing_one_point_swap(other_candidate)
 
     def mutation(self, mutation_rate):
+        # TODO: Check the mutation of a layer and the mutation of properties, layer mutation can hide value mutation
         """
         Mutate properties(layer-structure and layer-values of a Candidate)
+
         """
         self.generation += 1
         self._fitness = None
@@ -64,29 +66,31 @@ class CandidateNN:
 
         if(layer_dict['type']=='conv_layer'):
             if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['convolution']['filter']['height'] = RangedInt(1, 5)
+                layer_dict['convolution']['filter']['height'] = self._mutation_value_strategy(layer_dict['convolution']['filter']['height'],2)
             if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['convolution']['filter']['width'] = RangedInt(1, 5)
+                layer_dict['convolution']['filter']['width'] = self._mutation_value_strategy(layer_dict['convolution']['filter']['width'],2)
             if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['convolution']['filter']['outchannels'] = RangedInt(1, 64)
+                layer_dict['convolution']['filter']['outchannels'] = self._mutation_value_strategy(layer_dict['convolution']['filter']['outchannels'],20)
             if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['convolution']['strides']['x'] = RangedInt(1, 2)
+                layer_dict['convolution']['strides']['x'] = self._mutation_value_strategy(layer_dict['convolution']['strides']['x'],1)
             if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['convolution']['strides']['y'] = RangedInt(1, 2)
+                layer_dict['convolution']['strides']['y'] = self._mutation_value_strategy(layer_dict['convolution']['strides']['y'],1)
 
         elif layer_dict['type'] == 'maxpool_layer':
             if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['kernel']['height'] = RangedInt(1, 5)
+                layer_dict['kernel']['height'] = self._mutation_value_strategy(layer_dict['kernel']['height'],2)
             if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['kernel']['width'] = RangedInt(1, 5)
+                layer_dict['kernel']['width'] = self._mutation_value_strategy(layer_dict['kernel']['width'],2)
             if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['strides']['x'] = RangedInt(1, 5)
+                layer_dict['strides']['x'] = self._mutation_value_strategy(layer_dict['strides']['x'],2)
             if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['strides']['y'] = RangedInt(1, 5)
+                layer_dict['strides']['y'] = self._mutation_value_strategy(layer_dict['strides']['y'],2)
 
         elif layer_dict['type'] == 'feedforward_layer':
             if (random.uniform(0, 1) <= mutation_rate):
-                layer_dict['size'] = RangedInt(256, 2048)
+                layer_dict['size'] = self._mutation_value_strategy(layer_dict['size'],400)
+    def _mutation_value_strategy(self, old_value, plus_minus_range):
+        return old_value + RangedInt(-plus_minus_range,plus_minus_range).value
 
     def get_diversity(self, otherCandidate):
         #print('get_div')
@@ -157,7 +161,7 @@ class CandidateNN:
         if layer_type == 'conv_layer':
             layer_spec = self._create_conv_layer()
         elif layer_type == 'maxpool_layer':
-            layer_spec = self._create_max_layer()
+            layer_spec = self._create_maxpool_layer()
         elif layer_type == 'feedforward_layer':
             layer_spec = self._create_ff_layer()
         return layer_spec
@@ -199,7 +203,7 @@ class CandidateNN:
         }
         return layer
 
-    def _create_max_layer(self):
+    def _create_maxpool_layer(self):
         """
         Create dict for a random initialized Maxpool-layer
         """
