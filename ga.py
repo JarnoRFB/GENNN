@@ -2,15 +2,15 @@ import random
 import copy
 
 class GA:
-    def __init__(self, population_cnt: int, rate_mutation: float, rate_crossover: float, sample_candidate):
+    def __init__(self, population_cnt: int, rate_mutation: float, rate_crossover: float, candidate_class):
         #
         self._population_size = population_cnt
         self._rate_mutation = rate_mutation
         self._rate_crossover = rate_crossover
-        self._sample_candidate = sample_candidate
+        self._candidate_class= candidate_class
 
         # Create Random start population
-        self._population = list(self._sample_candidate() for i in range(self._population_size))
+        self._population = list(self._candidate_class() for i in range(self._population_size))
 
         self.generation = 0
         self.best_candidate = None

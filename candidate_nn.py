@@ -8,16 +8,16 @@ import math
 
 class CandidateNN:
 
-# ---------------------- Static class attributes ----------------------
+    # ---------------------- Static class attributes ----------------------
 
-    # RUNTIME_SPEC =  {'id': 1,
-    #                 'datadir': 'dir',
-    #                 'logdir': '/tmp/gennn/',
-    #                 'validate_each_n_steps': 100,
-    #                 'max_number_of_iterations': 200,
-    #                 'max_runtime': 10}
+    RUNTIME_SPEC = {'id': 1,
+                    'datadir': 'dir',
+                    'logdir': '/tmp/gennn/',
+                    'validate_each_n_steps': 100,
+                    'max_number_of_iterations': 200,
+                    'max_runtime': 10}
 
-    OPTIMIZER_CHOICES = ('AdamOptimizer', 'AdadeltaOptimizer', 'AdagradOptimizer', 'MomentumOptimizer',
+    OPTIMIZER_CHOICES = ('AdamOptimizer', 'AdadeltaOptimizer', 'AdagradOptimizer',
                          'FtrlOptimizer', 'ProximalGradientDescentOptimizer', 'ProximalAdagradOptimizer',
                          'RMSPropOptimizer', 'GradientDescentOptimizer')
     ACTIVATION_CHOICES = ('relu', 'relu6', 'sigmoid', 'tanh', 'crelu', 'elu', 'softplus', 'softsign')
@@ -25,12 +25,12 @@ class CandidateNN:
     LAYER_CNT_WEIGHT = 2
     MAX_LAYERS = 3
 
-    def __init__(self, runtime_spec, network_spec=None, generation=1):
+    def __init__(self, network_spec=None, generation=0):
 
         self.generation = generation
         self._fitness = None
         if network_spec is None:
-            network_spec = self._create_random_network(runtime_spec)
+            network_spec = self._create_random_network()
         self.network_spec = network_spec
 
     def crossover(self, other_candidate, strategy='onePointSwap'):
@@ -59,9 +59,6 @@ class CandidateNN:
 
         return self._fitness
 
-
-        return self._fitness
-
     def _fitness_function(self, results):
         """Calculate the fitness based on the network evaluation."""
         return  1 / (- self.ACCURACY_WEIGHT * math.log(results['accuracy'])
@@ -70,15 +67,13 @@ class CandidateNN:
     def _crossing_one_point_swap(self, other_candidate):
         print('')
 
-
-
-    def _create_random_network(self, runtime_spec):
+    def _create_random_network(self):
         """Construct a random network specification."""
 
         #TODO: should this be done in this class?
         # Finalize runtime specification.
         generation_dir = 'generation_{}/'.format(self.generation)
-        runtime_spec['logdir'] = os.path.join(runtime_spec['logdir'], generation_dir, str(runtime_spec['logdir']))
+        self.RUNTIME_SPEC['logdir'] = os.path.join(self.RUNTIME_SPEC['logdir'], generation_dir, str(self.RUNTIME_SPEC['logdir']))
 
         layer_cnt = RangedInt(1, self.MAX_LAYERS)
 
@@ -145,12 +140,10 @@ class CandidateNN:
             # Add layer to the network spec.
             network_spec['layers'].append(layer_spec)
 
-        network_spec.update(runtime_spec)
+        network_spec.update(self.RUNTIME_SPEC)
 
         return network_spec
-
 
     def _serialze_network_spec(self):
 
         return RangedJSONEncoder().encode(self.network_spec)
-
