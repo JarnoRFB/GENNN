@@ -147,6 +147,12 @@ class Network:
         Construct all layers according to the JSON specification. Then project
         everything on a readout layer. Then build loss and the training op.
         """
+        # Write extended to logdir.
+        os.makedirs(self.network_spec['logdir'],exist_ok=True)
+        self._write_to_logdir(json.dumps(self.network_spec), 'network.json')
+
+
+        tf.reset_default_graph()
         self.x = tf.placeholder(tf.float32, shape=[None, 28, 28, 1], name='input')
         self.y_ = tf.placeholder(tf.int32, shape=[None], name='labels')
         current_tensor = self._build_layers(self.x)

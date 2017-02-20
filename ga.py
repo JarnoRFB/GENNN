@@ -1,5 +1,6 @@
 import random
 import copy
+from time import gmtime, strftime
 
 
 class GA:
@@ -11,8 +12,12 @@ class GA:
         self._rate_crossover = rate_crossover
         self._candidate_class= candidate_class
 
+        self._start_time = strftime("%Y.%m.%d-%H.%M.%S",gmtime())
+        self._candidate_id = 0
         # Create Random start population
-        self._population = list(self._candidate_class() for i in range(self._population_size))
+        self._population = list(
+            self._candidate_class(candidate_id=i, start_time_str=self._start_time) for i in range(self._population_size))
+        self._candidate_id = self._population_size
 
         self.generation = 0
         self.best_candidate = None
@@ -52,6 +57,7 @@ class GA:
         # Here we can make Multi computing
         # Set: best_candidate and fitness_avg
         for candidate in self._population:
+            candidate.to_next_generation(self.generation)
             self.fitness_avg += candidate.get_fitness()
             if self.best_candidate is None or candidate.get_fitness() > self.best_candidate.get_fitness():
                 self.best_candidate = candidate
@@ -86,7 +92,17 @@ class GA:
             worst_candidate_idx = min(idx_candidates[0:tournement_size])
 
             if random.random() <= win_rate:
-                new_population.append(copy.deepcopy(sorted_candidates[best_candidate_idx]))
+                #new_population.append(copy.deepcopy(sorted_candidates[best_candidate_idx]))
+                network_spec_copy = copy.deepcopy(sorted_candidates[best_candidate_idx].network_spec)
+                new_population.append(self._candidate_class(candidate_id=self._candidate_id,
+                                                            start_time_str=self._start_time,
+                                                            network_spec=network_spec_copy))
+                self._candidate_id += 1
             else:
-                new_population.append(copy.deepcopy(sorted_candidates[worst_candidate_idx]))
+                #new_population.append(copy.deepcopy(sorted_candidates[worst_candidate_idx]))
+                network_spec_copy = copy.deepcopy(sorted_candidates[worst_candidate_idx].network_spec)
+                new_population.append(self._candidate_class(candidate_id=self._candidate_id,
+                                                            start_time_str=self._start_time,
+                                                            network_spec=network_spec_copy))
+                self._candidate_id += 1
         self._population = new_population
