@@ -4,13 +4,14 @@ from utils import RangedNum, RangedInt, RangedJSONEncoder
 from builder.network_builder import Network
 import os
 import math
-from time import gmtime, strftime
+import copy
+
 
 class CandidateNN:
 
     # ---------------------- Static class attributes ----------------------
 
-    runtime_spec = {'id': 1,
+    RUNTIME_SPEC = {'id': 1,
                     'datadir': 'MNIST_data',
                     'logdir': 'log/',
                     'validate_each_n_steps': 10,
@@ -135,6 +136,7 @@ class CandidateNN:
     MAX_LAYERS = 3
 
     def __init__(self, candidate_id, start_time_str, network_spec=None ):
+        self.runtime_spec = copy.deepcopy(self.RUNTIME_SPEC)
         self._base_logdir = os.path.join(self.runtime_spec['logdir'], str(start_time_str))
 
         self._candidate_id = candidate_id
@@ -142,6 +144,7 @@ class CandidateNN:
         if network_spec is None:
             network_spec = self._create_random_network()
         self.network_spec = network_spec
+
     def to_next_generation(self, generation):
 
         generation_dir = 'generation_{}/'.format(generation)
