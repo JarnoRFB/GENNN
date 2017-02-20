@@ -47,7 +47,7 @@ while(True):
 
     except Exception as e:
         print(e)
-        os.makedirs(genetic_hyperparamter['log'], exist_ok=True)
-        with open(os.path.join(genetic_hyperparamter['log'], 'error.log'), mode='a') as fp:
+        os.makedirs(genetic_hyperparamter['base_log_dir'], exist_ok=True)
+        with open(os.path.join(genetic_hyperparamter['base_log_dir'], 'error.log'), mode='a') as fp:
             fp.write(time.strftime("%Y.%m.%d-%H.%M.%S", time.gmtime()) + ' error: ' + str(e) + '\n')
         continue
