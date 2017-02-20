@@ -147,7 +147,7 @@ class CandidateNN:
         self.network_spec.update(self.runtime_spec)
 
 
-    def crossover(self, crossover_parms, crossover_rate, other_candidate):
+    def crossover(self, crossover_parms, other_candidate):
         self._fitness = None
 
         if crossover_parms['strategy'] == 'uniform_crossover':
