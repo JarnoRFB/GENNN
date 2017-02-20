@@ -2,10 +2,11 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import json
-from builder.helper import get_tensor_size
+from builder.helper import get_tensor_size, is_prime
 from tensorflow.examples.tutorials.mnist import input_data
 import os
 import datetime
+import math
 
 mnist = input_data.read_data_sets('MNIST_data', one_hot=False, reshape=False)
 
@@ -93,10 +94,12 @@ class Network:
         Returns:
             tensor: The activated output.
         """
+        inchannels, input_tensor = self._ensure_2d(input_tensor)
+
         layer_spec = self.network_spec['layers'][layer_number]
         filter_shape = (layer_spec['convolution']['filter']['height'],
                         layer_spec['convolution']['filter']['width'],
-                        int(input_tensor.get_shape()[-1]), # inchannels
+                        inchannels,
                         layer_spec['convolution']['filter']['outchannels'])
         filter_strides = (layer_spec['convolution']['strides']['inchannels'],
                           layer_spec['convolution']['strides']['x'],
@@ -109,6 +112,8 @@ class Network:
             activation = getattr(tf.nn, layer_spec['activation_function'])(conv + b, name='activation')
         return activation
 
+
+
     def maxpool_layer(self, input_tensor, layer_number):
         """Build a maxpooling layer.
 
@@ -119,8 +124,11 @@ class Network:
                Returns:
                    tensor: The max pooled output.
                """
+
+        inchannels, input_tensor = self._ensure_2d(input_tensor)
+
         layer_spec = self.network_spec['layers'][layer_number]
-        kernel_shape = (layer_spec['kernel']['inchannels'],
+        kernel_shape = (inchannels,
                         layer_spec['kernel']['height'],
                         layer_spec['kernel']['width'],
                         layer_spec['kernel']['outchannels'])
@@ -220,6 +228,27 @@ class Network:
         b = self._bias_variable([size], name='b')
         weighted = tf.matmul(input_tensor_flat, w) + b
         return weighted
+
+    def _ensure_2d(self, input_tensor):
+
+        if len(input_tensor.get_shape()) > 2:
+            inchannels = int(input_tensor.get_shape()[-1])  # inchannels
+        else:
+            inchannels = 1
+            input_tensor = self._reshape_to_2d(input_tensor)
+
+        return inchannels, input_tensor
+
+    def _reshape_to_2d(self, input_tensor):
+        # The lenght of the flat tensor.
+        flat_size = int(input_tensor.get_shape()[1])
+        side_length = math.ceil(math.sqrt(flat_size))
+        padding_size = (side_length ** 2) - flat_size
+        if padding_size != 0:
+            padding = tf.zeros(shape=[None, (side_length ** 2) - flat_size], name='padding')
+            input_tensor = tf.concat([input_tensor, padding], axis=0)
+        input_tensor_2d = tf.reshape(input_tensor, [-1, side_length, side_length, 1], name='reshape')
+        return input_tensor_2d
 
     @staticmethod
     def _weight_variable(shape, name):
