@@ -293,3 +293,4 @@ class Network:
             ax.set_xlabel('batch')
             ax.set_ylabel(y_label)
             fig.savefig(self.network_spec['logdir'] + y_label + '.png', format='png')
+            plt.close(fig)
