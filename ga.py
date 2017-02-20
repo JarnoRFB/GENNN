@@ -28,10 +28,14 @@ class GA:
 
         #Save json
         self._base_logdir = os.path.join(self._parms['base_log_dir'], str(self._start_time))
-        os.makedirs(self._base_logdir)
+        os.makedirs(self._base_logdir, exist_ok=True)
         file_loc = os.path.join(self._base_logdir, "ga.json")
         with open(file_loc, 'w') as fp:
             fp.write(str(self._parms))
+
+        self._all_fitness_avg =list()
+        self._all_fitness_best = list()
+        self._all_diversity = list()
 
     def mutate(self):
         self.best_candidate = None
