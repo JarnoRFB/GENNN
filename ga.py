@@ -5,18 +5,19 @@ from time import gmtime, strftime
 
 class GA:
 
-    def __init__(self, population_cnt: int, rate_mutation: float, rate_crossover: float, candidate_class):
+    def __init__(self,parms ):
         #
-        self._population_size = population_cnt
-        self._rate_mutation = rate_mutation
-        self._rate_crossover = rate_crossover
-        self._candidate_class= candidate_class
+        self._parms = parms
+        self._population_size = parms['population']
+        self._rate_mutation = parms['mutation']['rate']
+        self._rate_crossover = parms['crossover']['rate']
+        self._candidate_class= parms['candidate_class']
 
         self._start_time = strftime("%Y.%m.%d-%H.%M.%S",gmtime())
         self._candidate_id = 0
         # Create Random start population
         self._population = list(
-            self._candidate_class(candidate_id=i, start_time_str=self._start_time) for i in range(self._population_size))
+            self._candidate_class(candidate_id=i, start_time_str=self._start_time, runtime_spec=parms['RUNTIME_SPEC']) for i in range(self._population_size))
         self._candidate_id = self._population_size
 
         self.generation = 0
@@ -32,7 +33,7 @@ class GA:
         for candidate in self._population:
             candidate.mutation(self._rate_mutation)
 
-    def crossover(self,strategy = "onePointSwap"):
+    def crossover(self,strategy):
 
         if self._rate_crossover == 0:
             return
@@ -48,7 +49,8 @@ class GA:
             while candidate1 == candidate2:
                 candidate2 = random.randint(0, len(self._population) - 1)
 
-            self._population[candidate1].crossover(crossover_rate=self._rate_crossover,other_candidate=self._population[candidate2],strategy=strategy)
+            self._population[candidate1].crossover(other_candidate=self._population[candidate2],
+                                                   crossover_parms=strategy)
 
     def evaluate(self, calc_diversity):
         self.diversity = 0
@@ -96,13 +98,15 @@ class GA:
                 network_spec_copy = copy.deepcopy(sorted_candidates[best_candidate_idx].network_spec)
                 new_population.append(self._candidate_class(candidate_id=self._candidate_id,
                                                             start_time_str=self._start_time,
-                                                            network_spec=network_spec_copy))
+                                                            network_spec=network_spec_copy,
+                                                            runtime_spec=self._parms['RUNTIME_SPEC']))
                 self._candidate_id += 1
             else:
                 #new_population.append(copy.deepcopy(sorted_candidates[worst_candidate_idx]))
                 network_spec_copy = copy.deepcopy(sorted_candidates[worst_candidate_idx].network_spec)
                 new_population.append(self._candidate_class(candidate_id=self._candidate_id,
                                                             start_time_str=self._start_time,
-                                                            network_spec=network_spec_copy))
+                                                            network_spec=network_spec_copy,
+                                                            runtime_spec=self._parms['RUNTIME_SPEC']))
                 self._candidate_id += 1
         self._population = new_population

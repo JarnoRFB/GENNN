@@ -11,13 +11,6 @@ class CandidateNN:
 
     # ---------------------- Static class attributes ----------------------
 
-    RUNTIME_SPEC = {'id': 1,
-                    'datadir': 'MNIST_data',
-                    'logdir': 'log/',
-                    'validate_each_n_steps': 10,
-                    'max_number_of_iterations': 200,
-                    'max_runtime': 10}
-
     OPTIMIZER_CHOICES = ('AdamOptimizer', 'AdadeltaOptimizer', 'AdagradOptimizer',
                          'FtrlOptimizer', 'ProximalGradientDescentOptimizer', 'ProximalAdagradOptimizer',
                          'RMSPropOptimizer', 'GradientDescentOptimizer')
@@ -135,8 +128,9 @@ class CandidateNN:
     LAYER_CNT_WEIGHT = 2
     MAX_LAYERS = 3
 
-    def __init__(self, candidate_id, start_time_str, network_spec=None ):
-        self.runtime_spec = copy.deepcopy(self.RUNTIME_SPEC)
+    def __init__(self, candidate_id, start_time_str, runtime_spec, network_spec=None ):
+        self.runtime_spec = copy.deepcopy(runtime_spec)
+
         self._base_logdir = os.path.join(self.runtime_spec['logdir'], str(start_time_str))
 
         self._candidate_id = candidate_id
@@ -153,13 +147,13 @@ class CandidateNN:
         self.network_spec.update(self.runtime_spec)
 
 
-    def crossover(self, crossover_rate, other_candidate, strategy='uniform_crossover', uniform_method='swap'):
+    def crossover(self, crossover_parms, crossover_rate, other_candidate):
         self._fitness = None
 
-        if strategy == 'uniform_crossover':
-            self._crossover_uniform(crossver_rate=crossover_rate,
+        if crossover_parms['strategy'] == 'uniform_crossover':
+            self._crossover_uniform(crossver_rate=crossover_parms['rate'],
                                     other_candidate= other_candidate,
-                                    uniform_method=uniform_method)
+                                    uniform_method=crossover_parms['uniform_method'])
         else:
             raise ValueError('not implemented crossover strategy')
 
