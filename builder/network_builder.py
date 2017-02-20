@@ -126,9 +126,9 @@ class Network:
                """
 
         inchannels, input_tensor = self._ensure_2d(input_tensor)
-
+        #TODO :fix inchannels
         layer_spec = self.network_spec['layers'][layer_number]
-        kernel_shape = (inchannels,
+        kernel_shape = (1,
                         layer_spec['kernel']['height'],
                         layer_spec['kernel']['width'],
                         layer_spec['kernel']['outchannels'])
