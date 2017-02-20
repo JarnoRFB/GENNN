@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import json
-from builder.helper import get_tensor_size, is_prime
+from builder.helper import get_tensor_size
 from tensorflow.examples.tutorials.mnist import input_data
 import os
 import datetime
