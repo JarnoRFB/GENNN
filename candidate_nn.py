@@ -296,7 +296,7 @@ class CandidateNN:
             'hyperparameters': {
                 'learningrate': RangedNum(1e-4, 1e-3),
                 'optimizer': random.choice(self.OPTIMIZER_CHOICES),
-                'batchsize': 50  # Fixed batch size for comparability.
+                'batchsize': 100  # Fixed batch size for comparability.
             },
             'layers': []
         }
