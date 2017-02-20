@@ -4,23 +4,23 @@ from utils import RangedNum, RangedInt, RangedJSONEncoder
 from builder.network_builder import Network
 import os
 import math
-
+from time import gmtime, strftime
 
 class CandidateNN:
 
     # ---------------------- Static class attributes ----------------------
 
-    RUNTIME_SPEC = {'id': 1,
-                    'datadir': 'dir',
+    runtime_spec = {'id': 1,
+                    'datadir': 'MNIST_data',
                     'logdir': '/tmp/gennn/',
-                    'validate_each_n_steps': 100,
+                    'validate_each_n_steps': 10,
                     'max_number_of_iterations': 200,
                     'max_runtime': 10}
 
     OPTIMIZER_CHOICES = ('AdamOptimizer', 'AdadeltaOptimizer', 'AdagradOptimizer',
                          'FtrlOptimizer', 'ProximalGradientDescentOptimizer', 'ProximalAdagradOptimizer',
                          'RMSPropOptimizer', 'GradientDescentOptimizer')
-    ACTIVATION_CHOICES = ('relu', 'relu6', 'sigmoid', 'tanh', 'crelu', 'elu', 'softplus', 'softsign')
+    ACTIVATION_CHOICES = ('relu', 'relu6', 'sigmoid', 'tanh', 'elu', 'softplus', 'softsign')
     LAYER_TYPES = ("conv_layer", "maxpool_layer", "feedforward_layer")
     OPTIMIZING_PARMS = {
         'conv_layer':
@@ -134,13 +134,21 @@ class CandidateNN:
     LAYER_CNT_WEIGHT = 2
     MAX_LAYERS = 3
 
-    def __init__(self, network_spec=None, generation=0):
+    def __init__(self, candidate_id, start_time_str, network_spec=None ):
+        self._base_logdir = os.path.join(self.runtime_spec['logdir'], str(start_time_str))
 
-        self.generation = generation
+        self._candidate_id = candidate_id
         self._fitness = None
         if network_spec is None:
             network_spec = self._create_random_network()
         self.network_spec = network_spec
+    def to_next_generation(self, generation):
+
+        generation_dir = 'generation_{}/'.format(generation)
+        id_dir = '{}/'.format(self._candidate_id)
+        self.runtime_spec['logdir'] = os.path.join(self._base_logdir, generation_dir, id_dir)
+        self.network_spec.update(self.runtime_spec)
+
 
     def crossover(self, crossover_rate, other_candidate, strategy='uniform_crossover', uniform_method='swap'):
         self._fitness = None
@@ -209,7 +217,6 @@ class CandidateNN:
         Mutate properties(layer-structure and layer-values of a Candidate)
 
         """
-        self.generation += 1
         self._fitness = None
 
         #Mutate layer
@@ -271,7 +278,7 @@ class CandidateNN:
             result_spec = extended_spec['results']
             print(result_spec)
             self._fitness = self._fitness_function(result_spec)
-
+            del network
         return self._fitness
 
     def _fitness_function(self, results):
@@ -285,8 +292,6 @@ class CandidateNN:
 
         #TODO: should this be done in this class?
         # Finalize runtime specification.
-        generation_dir = 'generation_{}/'.format(self.generation)
-        self.RUNTIME_SPEC['logdir'] = os.path.join(self.RUNTIME_SPEC['logdir'], generation_dir, str(self.RUNTIME_SPEC['logdir']))
 
         layer_cnt = RangedInt(1, self.MAX_LAYERS)
 
@@ -313,8 +318,6 @@ class CandidateNN:
             #layer_spec = self._generate_network_layer(type=layer_type)
             # Add layer to the network spec.
             network_spec['layers'].append(layer_spec)
-
-        network_spec.update(self.RUNTIME_SPEC)
 
         return network_spec
 
