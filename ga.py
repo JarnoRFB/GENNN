@@ -76,7 +76,7 @@ class GA:
             if self.best_candidate is None or candidate.get_fitness() > self.best_candidate.get_fitness():
                 self.best_candidate = copy.deepcopy(candidate)
         self.fitness_avg /= len(self._population)
-        if(self.best_candidate_forever is None or self.best_candidate_forever.get_fitness() < self.best_candidate.get_fitness):
+        if(self.best_candidate_forever is None or self.best_candidate_forever.get_fitness() < self.best_candidate.get_fitness()):
             self.best_candidate_forever = copy.deepcopy(self.best_candidate)
         # Compute Diversity if wanted
         if calc_diversity:
