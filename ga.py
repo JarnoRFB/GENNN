@@ -8,8 +8,9 @@ class GA:
         self._population_size = population_cnt
         self._rate_mutation = rate_mutation
         self._rate_crossover = rate_crossover
-        self._candidate_class = candidate_class
-        self._start_time = strftime("%Y.%m.%d-%H:%M:%S",gmtime())
+        self._candidate_class= candidate_class
+
+        self._start_time = strftime("%Y.%m.%d-%H.%M.%S",gmtime())
         self._candidate_id = 0
         # Create Random start population
         self._population = list(
@@ -90,14 +91,14 @@ class GA:
 
             if random.random() <= win_rate:
                 #new_population.append(copy.deepcopy(sorted_candidates[best_candidate_idx]))
-                network_spec_copy = copy.deepcopy(sorted_candidates[best_candidate_idx])
+                network_spec_copy = copy.deepcopy(sorted_candidates[best_candidate_idx].network_spec)
                 new_population.append(self._candidate_class(candidate_id=self._candidate_id,
                                                             start_time_str=self._start_time,
                                                             network_spec=network_spec_copy))
                 self._candidate_id += 1
             else:
                 #new_population.append(copy.deepcopy(sorted_candidates[worst_candidate_idx]))
-                network_spec_copy = copy.deepcopy(sorted_candidates[worst_candidate_idx])
+                network_spec_copy = copy.deepcopy(sorted_candidates[worst_candidate_idx].network_spec)
                 new_population.append(self._candidate_class(candidate_id=self._candidate_id,
                                                             start_time_str=self._start_time,
                                                             network_spec=network_spec_copy))

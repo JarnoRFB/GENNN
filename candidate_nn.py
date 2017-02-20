@@ -12,7 +12,7 @@ class CandidateNN:
 
     runtime_spec = {'id': 1,
                     'datadir': 'MNIST_data',
-                    'logdir': '/tmp/gennn/',
+                    'logdir': 'log/',
                     'validate_each_n_steps': 10,
                     'max_number_of_iterations': 200,
                     'max_runtime': 10}
