@@ -232,30 +232,30 @@ class CandidateNN:
         if(random.uniform(0,1) <= mutation_rate):
             layer_dict['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
         for parms in self.OPTIMIZING_PARMS[layer_dict['type']]:
-            if parms['parms']['max'] == parms['parms']['min']:
-                break
-            parm_h = parms['parms']['hierarchi']
-            variance = (parms['parms']['max'] - parms['parms']['min']) / 2
-            if variance == 0 :
-                variance = 1
-            if parms['parms']['type'] == 'int':
-                variance = int(variance)
+            if parms['parms']['max'] != parms['parms']['min']:
 
-            if len(parm_h) == 1:
-                layer_dict[parm_h[0]] = self._mutation_value_strategy(
-                    old_value=layer_dict[parm_h[0]],
-                    variance=variance)
-            elif len(parm_h) == 2:
-                layer_dict[parm_h[0]][parm_h[1]] = self._mutation_value_strategy(
-                                                    old_value=layer_dict[parm_h[0]][parm_h[1]],
-                                                    variance=variance)
-            elif len(parm_h) == 3:
-                layer_dict[parm_h[0]][parm_h[1]][parm_h[2]] = self._mutation_value_strategy(
-                                                        old_value=layer_dict[parm_h[0]][parm_h[1]][parm_h[2]],
+                parm_h = parms['parms']['hierarchi']
+                variance = (parms['parms']['max'] - parms['parms']['min']) / 2
+                if variance == 0 :
+                    variance = 1
+                if parms['parms']['type'] == 'int':
+                    variance = int(variance)
+
+                if len(parm_h) == 1:
+                    layer_dict[parm_h[0]] = self._mutation_value_strategy(
+                        old_value=layer_dict[parm_h[0]],
+                        variance=variance)
+                elif len(parm_h) == 2:
+                    layer_dict[parm_h[0]][parm_h[1]] = self._mutation_value_strategy(
+                                                        old_value=layer_dict[parm_h[0]][parm_h[1]],
                                                         variance=variance)
-            else:
+                elif len(parm_h) == 3:
+                    layer_dict[parm_h[0]][parm_h[1]][parm_h[2]] = self._mutation_value_strategy(
+                                                            old_value=layer_dict[parm_h[0]][parm_h[1]][parm_h[2]],
+                                                            variance=variance)
+                else:
 
-                raise ValueError('length of hierarchi must 1,2 or 3')
+                    raise ValueError('length of hierarchi must 1,2 or 3')
 
 
     def _mutation_value_strategy(self, old_value, variance):
