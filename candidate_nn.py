@@ -219,7 +219,7 @@ class CandidateNN:
         #Mutate layer
         for i, layer_spec in enumerate(self.network_spec['layers']):
             #Mutate complet layer
-            if(random.uniform(0,1)<=mutation_rate):
+            if(random.uniform(0,1)<=(mutation_rate/10)):
                 new_layer_type = random.choice(self.LAYER_TYPES)
                 self.network_spec['layers'][i] = self._create_randomize_layer(layer_type=new_layer_type)
             else:#Only mutate Values if no new random layer
@@ -296,7 +296,7 @@ class CandidateNN:
             'hyperparameters': {
                 'learningrate': RangedNum(1e-4, 1e-3),
                 'optimizer': random.choice(self.OPTIMIZER_CHOICES),
-                'batchsize': 50  # Fixed batch size for comparability.
+                'batchsize': 100  # Fixed batch size for comparability.
             },
             'layers': []
         }

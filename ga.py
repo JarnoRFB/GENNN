@@ -1,8 +1,8 @@
 import random
 import copy
 from time import gmtime, strftime
-
-
+import os
+import json
 class GA:
 
     def __init__(self,parms ):
@@ -22,8 +22,16 @@ class GA:
 
         self.generation = 0
         self.best_candidate = None
+        self.best_candidate_forever = None
         self.fitness_avg = None
         self.diversity = None
+
+        #Save json
+        self._base_logdir = os.path.join(self._parms['base_log_dir'], str(self._start_time))
+        os.makedirs(self._base_logdir)
+        file_loc = os.path.join(self._base_logdir, "ga.json")
+        with open(file_loc, 'w') as fp:
+            fp.write(str(self._parms))
 
     def mutate(self):
         self.best_candidate = None
@@ -62,9 +70,10 @@ class GA:
             candidate.to_next_generation(self.generation)
             self.fitness_avg += candidate.get_fitness()
             if self.best_candidate is None or candidate.get_fitness() > self.best_candidate.get_fitness():
-                self.best_candidate = candidate
+                self.best_candidate = copy.deepcopy(candidate)
         self.fitness_avg /= len(self._population)
-
+        if(self.best_candidate_forever is None or self.best_candidate_forever.get_fitness() < self.best_candidate().get_fitness):
+            self.best_candidate_forever = copy.deepcopy(self.best_candidate)
         # Compute Diversity if wanted
         if calc_diversity:
             self._calc_diversity()
