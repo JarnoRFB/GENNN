@@ -9,7 +9,7 @@ class GA:
         self._rate_mutation = rate_mutation
         self._rate_crossover = rate_crossover
         self._candidate_class= candidate_class
-        self._start_time = strftime("%Y.%m.%d-%H:%M:%S",gmtime())
+        self._start_time = strftime("%Y.%m.%d-%H.%M.%S",gmtime())
         self._candidate_id = 0
         # Create Random start population
         self._population = list(
