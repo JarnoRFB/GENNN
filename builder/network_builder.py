@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import json
-from builder.helper import get_tensor_size, is_prime
+from builder.helper import get_tensor_size
 from tensorflow.examples.tutorials.mnist import input_data
 import os
 import datetime
@@ -240,13 +240,15 @@ class Network:
         return inchannels, input_tensor
 
     def _reshape_to_2d(self, input_tensor):
-        # The lenght of the flat tensor.
+
+        # The length of the flat tensor.
         flat_size = int(input_tensor.get_shape()[1])
         side_length = math.ceil(math.sqrt(flat_size))
         padding_size = (side_length ** 2) - flat_size
         if padding_size != 0:
-            padding = tf.zeros(shape=[None, (side_length ** 2) - flat_size], name='padding')
-            input_tensor = tf.concat([input_tensor, padding], axis=0)
+            padding = tf.zeros(shape=[tf.shape(input_tensor)[0], (side_length ** 2) - flat_size], name='padding')
+            input_tensor = tf.concat([input_tensor, padding], axis=1)
+            # input_tensor = tf.pad(input_tensor, [[None, None], [0, (side_length ** 2) - flat_size]], 'CONSTANT', name='padding')
         input_tensor_2d = tf.reshape(input_tensor, [-1, side_length, side_length, 1], name='reshape')
         return input_tensor_2d
 
