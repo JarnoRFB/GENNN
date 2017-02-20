@@ -286,7 +286,7 @@ class CandidateNN:
         #TODO: should this be done in this class?
         # Finalize runtime specification.
         generation_dir = 'generation_{}/'.format(self.generation)
-        self.RUNTIME_SPEC['logdir'] = os.path.join(self.RUNTIME_SPEC['logdir'], generation_dir, str(self.RUNTIME_SPEC['logdir']))
+        self.RUNTIME_SPEC['logdir'] = os.path.join(self.RUNTIME_SPEC['logdir'], generation_dir, str(self.RUNTIME_SPEC['id']))
 
         layer_cnt = RangedInt(1, self.MAX_LAYERS)
 

@@ -2,10 +2,11 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import json
-from builder.helper import get_tensor_size
+from builder.helper import get_tensor_size, is_prime
 from tensorflow.examples.tutorials.mnist import input_data
 import os
 import datetime
+import math
 
 mnist = input_data.read_data_sets('MNIST_data', one_hot=False, reshape=False)
 
@@ -93,10 +94,16 @@ class Network:
         Returns:
             tensor: The activated output.
         """
+        if len(input_tensor.get_shape()) > 2:
+            inchannels = int(input_tensor.get_shape()[-1])  # inchannels
+        else:
+            inchannels = 1
+            input_tensor = self._reshape_to_2d(input_tensor)
+
         layer_spec = self.network_spec['layers'][layer_number]
         filter_shape = (layer_spec['convolution']['filter']['height'],
                         layer_spec['convolution']['filter']['width'],
-                        int(input_tensor.get_shape()[-1]), # inchannels
+                        inchannels,
                         layer_spec['convolution']['filter']['outchannels'])
         filter_strides = (layer_spec['convolution']['strides']['inchannels'],
                           layer_spec['convolution']['strides']['x'],
@@ -214,6 +221,15 @@ class Network:
         b = self._bias_variable([size], name='b')
         weighted = tf.matmul(input_tensor_flat, w) + b
         return weighted
+
+    def _reshape_to_2d(self, input_tensor):
+        # The lenght of the flat tensor.
+        flat_size = input_tensor.get_shape()[1]
+        side_lenght = math.ceil(math.sqrt(flat_size))
+        padding = tf.zeros(shape=[None, (side_lenght ** 2) - flat_size], name='padding')
+        input_tensor_padded = tf.concat([input_tensor, padding], axis=0)
+        input_tensor_2d = tf.reshape(input_tensor_padded, [side_lenght, side_lenght], name='reshape')
+        return input_tensor_2d
 
     @staticmethod
     def _weight_variable(shape, name):

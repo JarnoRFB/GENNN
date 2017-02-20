@@ -1,7 +1,9 @@
 import random
 import copy
 
+
 class GA:
+
     def __init__(self, population_cnt: int, rate_mutation: float, rate_crossover: float, candidate_class):
         #
         self._population_size = population_cnt
