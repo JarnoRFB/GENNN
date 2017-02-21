@@ -2,7 +2,7 @@ import random
 import copy
 from time import gmtime, strftime
 import os
-import numpy as np
+
 import matplotlib.pyplot as plt
 
 class GA:
@@ -29,7 +29,7 @@ class GA:
         self.diversity = None
 
         #Save json
-        self._base_logdir = os.path.join(self._parms['base_log_dir'], str(self._start_time))
+        self._base_logdir = os.path.join(self._parms['RUNTIME_SPEC']['logdir'], str(self._start_time))
         os.makedirs(self._base_logdir, exist_ok=True)
         file_loc = os.path.join(self._base_logdir, "ga.json")
         with open(file_loc, 'w') as fp:
