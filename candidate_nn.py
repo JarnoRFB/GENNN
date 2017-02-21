@@ -5,6 +5,7 @@ from builder.network_builder import Network
 import os
 import math
 import copy
+import logging
 
 
 class CandidateNN:
@@ -191,21 +192,30 @@ class CandidateNN:
             layer_idx1 = random.randint(0,len(self.network_spec['layers'])-1)
             layer_idx2 = random.randint(0,len(other_candidate.network_spec['layers'])-1)
 
-            if(random.uniform(0,1)<=(crossover_rate/2)):       #Cross complete layer with lower probability
+            # If type is the same
+            if self.network_spec['layers'][layer_idx1]['type'] == other_candidate.network_spec['layers'][layer_idx2]['type']:
+                #Make complete or parm cross
+                if(random.uniform(0,1)<=0.5):       #Cross complete layer with lower probability
+                    logging.info("crossing:sameType:layer")
+                    tmp = self.network_spec['layers'][layer_idx1]
+                    self.network_spec['layers'][layer_idx1] = other_candidate.network_spec['layers'][layer_idx2]
+                    other_candidate.network_spec['layers'][layer_idx2] = tmp
+
+                else:                               #Same Type and cross elementwise
+                    logging.info("crossing:sameType:parms")
+                    self._swap_values(self.network_spec['layers'][layer_idx1],
+                                      other_candidate.network_spec['layers'][layer_idx2],crossover_rate)
+                    #Cross activation functino
+                    if ('activation_function' in self.network_spec['layers'][layer_idx1]
+                        and 'activation_function' in other_candidate.network_spec['layers'][layer_idx2]
+                        and random.uniform(0, 1) <= crossover_rate):
+                        self.network_spec['layers'][layer_idx1]['activation_function'] \
+                            = other_candidate.network_spec['layers'][layer_idx2]['activation_function']
+            else: #not the same, swap layer
+                logging.info("crossing:layer")
                 tmp = self.network_spec['layers'][layer_idx1]
                 self.network_spec['layers'][layer_idx1] = other_candidate.network_spec['layers'][layer_idx2]
                 other_candidate.network_spec['layers'][layer_idx2] = tmp
-
-            elif (self.network_spec['layers'][layer_idx1]['type'] == other_candidate.network_spec['layers'][layer_idx2]['type']
-                and random.uniform(0,1)<=crossover_rate):    #Same Type and cross elementwise
-                self._swap_values(self.network_spec['layers'][layer_idx1],
-                                  other_candidate.network_spec['layers'][layer_idx2],crossover_rate)
-                #Cross activation functino
-                if ('activation_function' in self.network_spec['layers'][layer_idx1]
-                    and 'activation_function' in other_candidate.network_spec['layers'][layer_idx2]
-                    and random.uniform(0, 1) <= crossover_rate):
-                    self.network_spec['layers'][layer_idx1]['activation_function'] \
-                        = other_candidate.network_spec['layers'][layer_idx2]['activation_function']
 
 
     def _swap_values(self, dict, other_dict, rate):
