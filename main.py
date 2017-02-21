@@ -43,8 +43,8 @@ while(True):
             gen.evaluate(calc_diversity=genetic_hyperparamter['calc_diversity'])
             gen.selection()
 
-            print("Gen: "+str(gen.generation)+"- Fitness_avg: "+str(gen.fitness_avg)+"- Fitness_best: "+str(gen.best_candidate.get_fitness()))
-
+            print("Gen: "+str(gen.generation)+"- Fitness_avg: "+str(round(gen.fitness_avg,3))+"- Fitness_best: "+str(round(gen.best_candidate.get_fitness(),3)))
+        gen.write_stats()
     except Exception as e:
         print(e)
         os.makedirs(genetic_hyperparamter['base_log_dir'], exist_ok=True)
