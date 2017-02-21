@@ -270,9 +270,42 @@ class CandidateNN:
         """ sub/add a number between -variance and variance"""
         return old_value + old_value.__class__(-variance, variance).value
 
-    def get_diversity(self, otherCandidate):
+    def get_diversity(self, other_candidate):
 
-        return random.random()
+
+        div = 0
+        div += abs(len(self.network_spec['layers']) - len(other_candidate.network_spec['layers']))
+
+        min_layers = min(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
+        for layer_idx, layer in enumerate(self.network_spec['layers'][:min_layers]):
+            layer_dict = layer
+            other_layer_dict = other_candidate.network_spec['layers'][layer_idx]
+            if layer_dict['type'] == other_layer_dict['type']:
+                #make deeper compare
+                mutable_parms = 0
+                div_parms = 0
+                for parms in self.OPTIMIZING_PARMS[layer_dict['type']]:
+                    if parms['parms']['max'] == parms['parms']['min']:  #don't check on not mutable parms
+                        break
+                    mutable_parms += 1
+                    parm_h = parms['parms']['hierarchi']
+                    if len(parm_h) == 1:
+                        if layer_dict[parm_h[0]] != other_layer_dict[parm_h[0]]:
+                            div_parms += 1
+                    elif len(parm_h) == 2:
+                        if layer_dict[parm_h[0]][parm_h[1]] !=other_layer_dict[parm_h[0]][parm_h[1]]:
+                            div_parms += 1
+                    elif len(parm_h) == 3:
+                        if layer_dict[parm_h[0]][parm_h[1]][parm_h[2]] != other_layer_dict[parm_h[0]][parm_h[1]][parm_h[2]]:
+                            div_parms += 1
+                    else:
+
+                        raise ValueError('length of hierarchi must 1,2 or 3')
+                div += (div_parms/mutable_parms)
+            else:
+                div += 1
+        max_layers = max(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
+        return div/max_layers
 
     def get_fitness(self):
         """Get fitness of the candidate. If not yet tested, test the fitness based on the network specificaton."""
