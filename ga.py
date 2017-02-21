@@ -2,7 +2,9 @@ import random
 import copy
 from time import gmtime, strftime
 import os
-import json
+import numpy as np
+import matplotlib.pyplot as plt
+
 class GA:
 
     def __init__(self,parms ):
@@ -76,11 +78,29 @@ class GA:
             if self.best_candidate is None or candidate.get_fitness() > self.best_candidate.get_fitness():
                 self.best_candidate = copy.deepcopy(candidate)
         self.fitness_avg /= len(self._population)
-        if(self.best_candidate_forever is None or self.best_candidate_forever.get_fitness() < self.best_candidate.get_fitness):
+        if(self.best_candidate_forever is None or self.best_candidate_forever.get_fitness() < self.best_candidate.get_fitness()):
             self.best_candidate_forever = copy.deepcopy(self.best_candidate)
         # Compute Diversity if wanted
         if calc_diversity:
             self._calc_diversity()
+
+        self._all_fitness_avg.append(copy.copy(self.fitness_avg))
+        self._all_fitness_best.append(copy.copy(self.best_candidate.get_fitness()))
+        self._all_diversity.append(copy.copy(self.diversity))
+
+    def write_stats(self):
+
+        file = os.path.join(self._base_logdir, 'graph.png')
+        fig = plt.figure()
+
+        ax = fig.add_subplot(111)
+        ax.plot(self._all_fitness_avg, label='Fitness avg')
+        ax.plot(self._all_fitness_best, label='Fitness best')
+        ax.plot(self._all_diversity, label='diversity')
+        ax.set_xlabel('Generation')
+        ax.legend()
+        fig.savefig(file, format='png')
+        plt.close(fig)
 
     def _calc_diversity(self):
         divs = 0

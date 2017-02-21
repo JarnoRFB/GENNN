@@ -126,7 +126,6 @@ class CandidateNN:
 
     ACCURACY_WEIGHT = 20
     LAYER_CNT_WEIGHT = 2
-    MAX_LAYERS = 3
 
     def __init__(self, candidate_id, start_time_str, runtime_spec, network_spec=None ):
         self.runtime_spec = copy.deepcopy(runtime_spec)
@@ -167,15 +166,24 @@ class CandidateNN:
                 layer_dict = layer
                 other_layer_dict = other_candidate.network_spec['layers'][layer_idx]
 
-                if (random.uniform(0, 1) <= crossver_rate):
-                    layer_dict['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
+                #Cross whole layer
+                if random.uniform(0, 1) <= crossver_rate / 10:
+                    tmp = copy.deepcopy(other_layer_dict)
+                    other_candidate.network_spec['layers'][layer_idx] = copy.deepcopy(layer)
+                    self.network_spec['layers'][layer_idx] = tmp
+                else:
+                    if ('activation_function' in layer_dict
+                        and 'activation_function' in other_layer_dict
+                        and random.uniform(0, 1) <= crossver_rate):
+                        layer_dict['activation_function'] = other_layer_dict['activation_function']
 
-                if(layer_dict['type'] == other_layer_dict['type']):
-                    self._swap_values(layer_dict,other_layer_dict, crossver_rate)
+                    if(layer_dict['type'] == other_layer_dict['type']):
+                        self._swap_values(layer_dict,other_layer_dict, crossver_rate)
 
 
         else:
             raise ValueError('not implemented uniform_crossover_method')
+
     def _swap_values(self, dict, other_dict,rate):
         """Swaps Properties between two Layers of the same type with Propapility rate"""
         for parm in self.OPTIMIZING_PARMS[dict['type']]:
@@ -262,9 +270,42 @@ class CandidateNN:
         """ sub/add a number between -variance and variance"""
         return old_value + old_value.__class__(-variance, variance).value
 
-    def get_diversity(self, otherCandidate):
+    def get_diversity(self, other_candidate):
 
-        return random.random()
+
+        div = 0
+        div += abs(len(self.network_spec['layers']) - len(other_candidate.network_spec['layers']))
+
+        min_layers = min(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
+        for layer_idx, layer in enumerate(self.network_spec['layers'][:min_layers]):
+            layer_dict = layer
+            other_layer_dict = other_candidate.network_spec['layers'][layer_idx]
+            if layer_dict['type'] == other_layer_dict['type']:
+                #make deeper compare
+                mutable_parms = 0
+                div_parms = 0
+                for parms in self.OPTIMIZING_PARMS[layer_dict['type']]:
+                    if parms['parms']['max'] == parms['parms']['min']:  #don't check on not mutable parms
+                        break
+                    mutable_parms += 1
+                    parm_h = parms['parms']['hierarchi']
+                    if len(parm_h) == 1:
+                        if layer_dict[parm_h[0]] != other_layer_dict[parm_h[0]]:
+                            div_parms += 1
+                    elif len(parm_h) == 2:
+                        if layer_dict[parm_h[0]][parm_h[1]] !=other_layer_dict[parm_h[0]][parm_h[1]]:
+                            div_parms += 1
+                    elif len(parm_h) == 3:
+                        if layer_dict[parm_h[0]][parm_h[1]][parm_h[2]] != other_layer_dict[parm_h[0]][parm_h[1]][parm_h[2]]:
+                            div_parms += 1
+                    else:
+
+                        raise ValueError('length of hierarchi must 1,2 or 3')
+                div += (div_parms/mutable_parms)
+            else:
+                div += 1
+        max_layers = max(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
+        return div/max_layers
 
     def get_fitness(self):
         """Get fitness of the candidate. If not yet tested, test the fitness based on the network specificaton."""
@@ -290,7 +331,7 @@ class CandidateNN:
         #TODO: should this be done in this class?
         # Finalize runtime specification.
 
-        layer_cnt = RangedInt(1, self.MAX_LAYERS)
+        layer_cnt = RangedInt(1, self.runtime_spec['max_layer'])
 
         network_spec = {
             'hyperparameters': {

@@ -3,7 +3,7 @@ from candidate_nn import CandidateNN
 from utils import RangedNum
 import time
 import os
-
+import traceback
 while(True):
 
     try:
@@ -32,7 +32,8 @@ while(True):
                             'logdir': 'log/',
                             'validate_each_n_steps': 10,
                             'max_number_of_iterations': 600,
-                            'max_runtime': 10}
+                            'max_runtime': 10,
+                            'max_layer': 3}
 
         }
         gen = GA(genetic_hyperparamter)
@@ -43,11 +44,11 @@ while(True):
             gen.evaluate(calc_diversity=genetic_hyperparamter['calc_diversity'])
             gen.selection()
 
-            print("Gen: "+str(gen.generation)+"- Fitness_avg: "+str(gen.fitness_avg)+"- Fitness_best: "+str(gen.best_candidate.get_fitness()))
-
+            print("Gen: "+str(gen.generation)+"- Fitness_avg: "+str(round(gen.fitness_avg,3))+"- Fitness_best: "+str(round(gen.best_candidate.get_fitness(),3)))
+        gen.write_stats()
     except Exception as e:
         print(e)
         os.makedirs(genetic_hyperparamter['base_log_dir'], exist_ok=True)
         with open(os.path.join(genetic_hyperparamter['base_log_dir'], 'error.log'), mode='a') as fp:
-            fp.write(time.strftime("%Y.%m.%d-%H.%M.%S", time.gmtime()) + ' error: ' + str(e) + '\n')
+            fp.write(time.strftime("%Y.%m.%d-%H.%M.%S", time.gmtime()) + ' error: ' + str(traceback.format_exc()) + '\n')
         continue
