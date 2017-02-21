@@ -2,24 +2,27 @@ import random
 import copy
 from time import gmtime, strftime
 import os
-import numpy as np
+
 import matplotlib.pyplot as plt
+
 
 class GA:
 
-    def __init__(self,parms ):
+    def __init__(self, parms):
         #
         self._parms = parms
         self._population_size = parms['population']
         self._rate_mutation = parms['mutation']['rate']
         self._rate_crossover = parms['crossover']['rate']
-        self._candidate_class= parms['candidate_class']
+        self._candidate_class = parms['candidate_class']
 
-        self._start_time = strftime("%Y.%m.%d-%H.%M.%S",gmtime())
+        self._start_time = strftime("%Y.%m.%d-%H.%M.%S", gmtime())
         self._candidate_id = 0
         # Create Random start population
         self._population = list(
-            self._candidate_class(candidate_id=i, start_time_str=self._start_time, runtime_spec=parms['RUNTIME_SPEC']) for i in range(self._population_size))
+            self._candidate_class(candidate_id=i, start_time_str=self._start_time, runtime_spec=parms['RUNTIME_SPEC'])
+            for i in range(self._population_size)
+        )
         self._candidate_id = self._population_size
 
         self.generation = 0
@@ -28,14 +31,14 @@ class GA:
         self.fitness_avg = None
         self.diversity = None
 
-        #Save json
-        self._base_logdir = os.path.join(self._parms['base_log_dir'], str(self._start_time))
+        # Save json
+        self._base_logdir = os.path.join(self._parms['RUNTIME_SPEC']['logdir'], str(self._start_time))
         os.makedirs(self._base_logdir, exist_ok=True)
         file_loc = os.path.join(self._base_logdir, "ga.json")
         with open(file_loc, 'w') as fp:
             fp.write(str(self._parms))
 
-        self._all_fitness_avg =list()
+        self._all_fitness_avg = list()
         self._all_fitness_best = list()
         self._all_diversity = list()
 
@@ -47,7 +50,7 @@ class GA:
         for candidate in self._population:
             candidate.mutation(self._rate_mutation)
 
-    def crossover(self,strategy):
+    def crossover(self, strategy):
 
         if self._rate_crossover == 0:
             return
@@ -78,7 +81,9 @@ class GA:
             if self.best_candidate is None or candidate.get_fitness() > self.best_candidate.get_fitness():
                 self.best_candidate = copy.deepcopy(candidate)
         self.fitness_avg /= len(self._population)
-        if(self.best_candidate_forever is None or self.best_candidate_forever.get_fitness() < self.best_candidate.get_fitness()):
+        if (self.best_candidate_forever is None or
+            self.best_candidate_forever.get_fitness() < self.best_candidate.get_fitness()):
+            # Copy best candidate.
             self.best_candidate_forever = copy.deepcopy(self.best_candidate)
         # Compute Diversity if wanted
         if calc_diversity:

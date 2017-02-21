@@ -72,7 +72,14 @@ class Network:
             # Save plots for losses and accuracies.
             self._plot(loss=losses, accuracy=accuracies)
 
-            extended_spec = self._extend_network_spec(accuracy=float(validation_accuracies.mean()))
+            # Get total number of weights.
+            n_weights = 0
+
+            for var in tf.trainable_variables():
+                n_weights += get_tensor_size(var)
+
+            extended_spec = self._extend_network_spec(accuracy=float(validation_accuracies.mean()),
+                                                      n_weights=n_weights)
 
             # Write extended to logdir.
             self._write_to_logdir(extended_spec, 'network.json')
@@ -123,8 +130,6 @@ class Network:
             activation = getattr(tf.nn, layer_spec['activation_function'])(conv + b, name='activation')
         return activation
 
-
-
     def maxpool_layer(self, input_tensor, layer_number):
         """Build a maxpooling layer.
 
@@ -160,10 +165,9 @@ class Network:
         everything on a readout layer. Then build loss and the training op.
         """
         # Write extended to logdir.
-        os.makedirs(self.network_spec['logdir'],exist_ok=True)
+        os.makedirs(self.network_spec['logdir'], exist_ok=True)
         self._write_to_logdir(json.dumps(self.network_spec), 'network.json')
-
-
+        # Reset the old graphs from previous candidates.
         tf.reset_default_graph()
         self.x = tf.placeholder(tf.float32, shape=[None, 28, 28, 1], name='input')
         self.y_ = tf.placeholder(tf.int32, shape=[None], name='labels')
@@ -241,7 +245,16 @@ class Network:
         return weighted
 
     def _ensure_2d(self, input_tensor):
+        """Make sure that `input_tensor` can be used for convolution and maxpooling ops.
 
+        Args:
+            input_tensor (tensor): The tensor that potentially has to be converted to 2D.
+
+        Returns:
+            Number of inchannels for the next layer.
+            The `input_tensor` for the next layer.
+
+        """
         if len(input_tensor.get_shape()) > 2:
             inchannels = int(input_tensor.get_shape()[-1])  # inchannels
         else:
@@ -259,7 +272,6 @@ class Network:
         if padding_size != 0:
             padding = tf.zeros(shape=[tf.shape(input_tensor)[0], (side_length ** 2) - flat_size], name='padding')
             input_tensor = tf.concat([input_tensor, padding], axis=1)
-            # input_tensor = tf.pad(input_tensor, [[None, None], [0, (side_length ** 2) - flat_size]], 'CONSTANT', name='padding')
         input_tensor_2d = tf.reshape(input_tensor, [-1, side_length, side_length, 1], name='reshape')
         return input_tensor_2d
 

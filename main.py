@@ -8,9 +8,8 @@ while(True):
 
     try:
         genetic_hyperparamter = {
-            'base_log_dir': 'log/',
             'population': 10,
-            'calc_diversity': False,
+            'calc_diversity': True,
             'crossover': {
                 'strategy': 'uniform_crossover',
                 'uniform_method': 'swap',
@@ -48,7 +47,7 @@ while(True):
         gen.write_stats()
     except Exception as e:
         print(e)
-        os.makedirs(genetic_hyperparamter['base_log_dir'], exist_ok=True)
-        with open(os.path.join(genetic_hyperparamter['base_log_dir'], 'error.log'), mode='a') as fp:
+        os.makedirs(genetic_hyperparamter['RUNTIME_SPEC']['logdir'], exist_ok=True)
+        with open(os.path.join(genetic_hyperparamter['RUNTIME_SPEC']['logdir'], 'error.log'), mode='a') as fp:
             fp.write(time.strftime("%Y.%m.%d-%H.%M.%S", time.gmtime()) + ' error: ' + str(traceback.format_exc()) + '\n')
         continue

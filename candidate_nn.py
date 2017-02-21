@@ -5,6 +5,7 @@ from builder.network_builder import Network
 import os
 import math
 import copy
+import logging
 
 
 class CandidateNN:
@@ -16,6 +17,9 @@ class CandidateNN:
                          'RMSPropOptimizer', 'GradientDescentOptimizer')
     ACTIVATION_CHOICES = ('relu', 'relu6', 'sigmoid', 'tanh', 'elu', 'softplus', 'softsign')
     LAYER_TYPES = ("conv_layer", "maxpool_layer", "feedforward_layer")
+    ACCURACY_WEIGHT = 20
+    LAYER_CNT_WEIGHT = 2
+    WEIGHTS_CNT_WEIGHT = 0.1
     OPTIMIZING_PARMS = {
         'conv_layer':
         [
@@ -124,10 +128,7 @@ class CandidateNN:
         ]
     }
 
-    ACCURACY_WEIGHT = 20
-    LAYER_CNT_WEIGHT = 2
-
-    def __init__(self, candidate_id, start_time_str, runtime_spec, network_spec=None ):
+    def __init__(self, candidate_id, start_time_str, runtime_spec, network_spec=None):
         self.runtime_spec = copy.deepcopy(runtime_spec)
 
         self._base_logdir = os.path.join(self.runtime_spec['logdir'], str(start_time_str))
@@ -145,46 +146,79 @@ class CandidateNN:
         self.runtime_spec['logdir'] = os.path.join(self._base_logdir, generation_dir, id_dir)
         self.network_spec.update(self.runtime_spec)
 
-
     def crossover(self, crossover_parms, other_candidate):
         self._fitness = None
 
         if crossover_parms['strategy'] == 'uniform_crossover':
-            self._crossover_uniform(crossver_rate=crossover_parms['rate'],
-                                    other_candidate= other_candidate,
+            self._crossover_uniform(crossover_rate=crossover_parms['rate'],
+                                    other_candidate=other_candidate,
                                     uniform_method=crossover_parms['uniform_method'])
         else:
             raise ValueError('not implemented crossover strategy')
 
 
-
-    def _crossover_uniform(self, crossver_rate, other_candidate, uniform_method):
+    def _crossover_uniform2(self, crossover_rate, other_candidate, uniform_method):
         """Performs a unifrom Crossover between two Candidates"""
-        if(uniform_method == 'swap'):
+        if uniform_method == 'swap':
             min_layers = min(len(self.network_spec['layers']),len(other_candidate.network_spec['layers']))
             for layer_idx, layer in enumerate(self.network_spec['layers'][:min_layers]):
                 layer_dict = layer
                 other_layer_dict = other_candidate.network_spec['layers'][layer_idx]
 
                 #Cross whole layer
-                if random.uniform(0, 1) <= crossver_rate / 10:
+                if random.uniform(0, 1) <= crossover_rate / 5:
                     tmp = copy.deepcopy(other_layer_dict)
                     other_candidate.network_spec['layers'][layer_idx] = copy.deepcopy(layer)
                     self.network_spec['layers'][layer_idx] = tmp
                 else:
                     if ('activation_function' in layer_dict
                         and 'activation_function' in other_layer_dict
-                        and random.uniform(0, 1) <= crossver_rate):
+                        and random.uniform(0, 1) <= crossover_rate):
                         layer_dict['activation_function'] = other_layer_dict['activation_function']
 
                     if(layer_dict['type'] == other_layer_dict['type']):
-                        self._swap_values(layer_dict,other_layer_dict, crossver_rate)
+                        self._swap_values(layer_dict, other_layer_dict, crossover_rate)
 
 
         else:
             raise ValueError('not implemented uniform_crossover_method')
 
-    def _swap_values(self, dict, other_dict,rate):
+
+    def _crossover_uniform(self, crossover_rate, other_candidate, uniform_method):
+        min_layers = min(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
+        num_layer_crossover = max(1,int(min_layers * crossover_rate))
+
+        for swap_idx in range(num_layer_crossover):
+            layer_idx1 = random.randint(0,len(self.network_spec['layers'])-1)
+            layer_idx2 = random.randint(0,len(other_candidate.network_spec['layers'])-1)
+
+            # If type is the same
+            if self.network_spec['layers'][layer_idx1]['type'] == other_candidate.network_spec['layers'][layer_idx2]['type']:
+                #Make complete or parm cross
+                if(random.uniform(0,1)<=0.5):       #Cross complete layer with lower probability
+                    logging.info("crossing:sameType:layer")
+                    tmp = self.network_spec['layers'][layer_idx1]
+                    self.network_spec['layers'][layer_idx1] = other_candidate.network_spec['layers'][layer_idx2]
+                    other_candidate.network_spec['layers'][layer_idx2] = tmp
+
+                else:                               #Same Type and cross elementwise
+                    logging.info("crossing:sameType:parms")
+                    self._swap_values(self.network_spec['layers'][layer_idx1],
+                                      other_candidate.network_spec['layers'][layer_idx2],crossover_rate)
+                    #Cross activation functino
+                    if ('activation_function' in self.network_spec['layers'][layer_idx1]
+                        and 'activation_function' in other_candidate.network_spec['layers'][layer_idx2]
+                        and random.uniform(0, 1) <= crossover_rate):
+                        self.network_spec['layers'][layer_idx1]['activation_function'] \
+                            = other_candidate.network_spec['layers'][layer_idx2]['activation_function']
+            else: #not the same, swap layer
+                logging.info("crossing:layer")
+                tmp = self.network_spec['layers'][layer_idx1]
+                self.network_spec['layers'][layer_idx1] = other_candidate.network_spec['layers'][layer_idx2]
+                other_candidate.network_spec['layers'][layer_idx2] = tmp
+
+
+    def _swap_values(self, dict, other_dict, rate):
         """Swaps Properties between two Layers of the same type with Propapility rate"""
         for parm in self.OPTIMIZING_PARMS[dict['type']]:
             if random.uniform(0,1)<=rate:
@@ -224,27 +258,28 @@ class CandidateNN:
         """
         self._fitness = None
 
-        #Mutate layer
+        # Mutate layer
         for i, layer_spec in enumerate(self.network_spec['layers']):
-            #Mutate complet layer
+            # Mutate complet layer
             if(random.uniform(0,1)<=(mutation_rate/10)):
                 new_layer_type = random.choice(self.LAYER_TYPES)
                 self.network_spec['layers'][i] = self._create_randomize_layer(layer_type=new_layer_type)
-            else:#Only mutate Values if no new random layer
+            else:
+                # Only mutate Values if no new random layer
                 self._mutate_layer_values(layer_dict=self.network_spec['layers'][i], mutation_rate=mutation_rate)
 
     def _mutate_layer_values(self, layer_dict, mutation_rate):
         """
-        Mutate each value of a layer with a probability of mutation_rate
+        Mutate each value of a layer with a probability of `mutation_rate`.
         """
-        if(random.uniform(0,1) <= mutation_rate):
+        if random.uniform(0, 1) <= mutation_rate:
             layer_dict['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
         for parms in self.OPTIMIZING_PARMS[layer_dict['type']]:
             if parms['parms']['max'] != parms['parms']['min']:
 
                 parm_h = parms['parms']['hierarchy']
                 variance = (parms['parms']['max'] - parms['parms']['min']) / 2
-                if variance == 0 :
+                if variance == 0:
                     variance = 1
                 if parms['parms']['type'] == 'int':
                     variance = int(variance)
@@ -265,13 +300,11 @@ class CandidateNN:
 
                     raise ValueError('length of hierarchy must 1,2 or 3')
 
-
     def _mutation_value_strategy(self, old_value, variance):
         """ sub/add a number between -variance and variance"""
         return old_value + old_value.__class__(-variance, variance).value
 
     def get_diversity(self, other_candidate):
-
 
         div = 0
         div += abs(len(self.network_spec['layers']) - len(other_candidate.network_spec['layers']))
@@ -281,11 +314,11 @@ class CandidateNN:
             layer_dict = layer
             other_layer_dict = other_candidate.network_spec['layers'][layer_idx]
             if layer_dict['type'] == other_layer_dict['type']:
-                #make deeper compare
+                # make deeper compare
                 mutable_parms = 0
                 div_parms = 0
                 for parms in self.OPTIMIZING_PARMS[layer_dict['type']]:
-                    if parms['parms']['max'] == parms['parms']['min']:  #don't check on not mutable parms
+                    if parms['parms']['max'] == parms['parms']['min']:  # don't check on not mutable parms
                         break
                     mutable_parms += 1
                     parm_h = parms['parms']['hierarchy']
@@ -293,7 +326,7 @@ class CandidateNN:
                         if layer_dict[parm_h[0]] != other_layer_dict[parm_h[0]]:
                             div_parms += 1
                     elif len(parm_h) == 2:
-                        if layer_dict[parm_h[0]][parm_h[1]] !=other_layer_dict[parm_h[0]][parm_h[1]]:
+                        if layer_dict[parm_h[0]][parm_h[1]] != other_layer_dict[parm_h[0]][parm_h[1]]:
                             div_parms += 1
                     elif len(parm_h) == 3:
                         if layer_dict[parm_h[0]][parm_h[1]][parm_h[2]] != other_layer_dict[parm_h[0]][parm_h[1]][parm_h[2]]:
@@ -322,15 +355,14 @@ class CandidateNN:
     def _fitness_function(self, results):
         """Calculate the fitness based on the network evaluation."""
         # TODO: get the number of weights as penalty?
-        return  1 / (- self.ACCURACY_WEIGHT * math.log(results['accuracy'])
-                     + self.LAYER_CNT_WEIGHT * len(self.network_spec['layers']))
+        return 1 / (- self.ACCURACY_WEIGHT * math.log(results['accuracy'])
+                    + self.LAYER_CNT_WEIGHT * len(self.network_spec['layers'])
+                    + self.WEIGHTS_CNT_WEIGHT * results['n_weights'])
 
     def _create_random_network(self):
         """Construct a random network specification."""
 
-        #TODO: should this be done in this class?
         # Finalize runtime specification.
-
         layer_cnt = RangedInt(1, self.runtime_spec['max_layer'])
 
         network_spec = {
@@ -369,6 +401,8 @@ class CandidateNN:
             layer_spec = self._create_maxpool_layer()
         elif layer_type == 'feedforward_layer':
             layer_spec = self._create_ff_layer()
+        else:
+            raise ValueError('Invalid layer type {}'.format(layer_type))
         return layer_spec
 
     def _create_ff_layer(self):
@@ -414,19 +448,18 @@ class CandidateNN:
             'kernel': {
                 'height': RangedInt(1, 5),
                 'width': RangedInt(1, 5),
-                'inchannels': 1,
-            # Must probably be 1 as well. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
+                'inchannels': 1, # Must probably be 1 as well. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
                 'outchannels': 1,
             },
             'strides': {
                 'y': RangedInt(1, 5),
                 'x': RangedInt(1, 5),
-                'inchannels': 1,
-            # Must probably be 1 as well. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
+                'inchannels': 1, # Must probably be 1 as well. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
                 'batch': 1
             }
         }
         return layer
+
     def _generate_network_layer(self, type):
         # TODO: Implement this!
         raise Exception("Not implemented")
@@ -447,6 +480,7 @@ class CandidateNN:
             else:
                 raise ValueError('length of hierarchy must 1,2 or 3')
         return layer
+
     def _serialze_network_spec(self):
 
         return RangedJSONEncoder().encode(self.network_spec)
