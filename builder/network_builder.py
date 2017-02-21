@@ -36,7 +36,7 @@ class Network:
         merged_summary = tf.summary.merge_all()
         # Time when starting the training.
         start_time = datetime.datetime.now()
-        # Arrays for storying intermediate results.
+        # Arrays for storing intermediate results.
         losses = np.zeros(self.network_spec['max_number_of_iterations'] // self.network_spec['validate_each_n_steps'])
         accuracies = np.zeros(self.network_spec['max_number_of_iterations'] // self.network_spec['validate_each_n_steps'])
         with tf.Session() as sess:
@@ -100,17 +100,17 @@ class Network:
         inchannels, input_tensor = self._ensure_2d(input_tensor)
 
         layer_spec = self.network_spec['layers'][layer_number]
-        filter_shape = (layer_spec['convolution']['filter']['height'],
-                        layer_spec['convolution']['filter']['width'],
+        filter_shape = (layer_spec['filter']['height'],
+                        layer_spec['filter']['width'],
                         inchannels,
-                        layer_spec['convolution']['filter']['outchannels'])
-        filter_strides = (layer_spec['convolution']['strides']['inchannels'],
-                          layer_spec['convolution']['strides']['x'],
-                          layer_spec['convolution']['strides']['y'],
-                          layer_spec['convolution']['strides']['batch'])
+                        layer_spec['filter']['outchannels'])
+        filter_strides = (layer_spec['strides']['inchannels'],
+                          layer_spec['strides']['x'],
+                          layer_spec['strides']['y'],
+                          layer_spec['strides']['batch'])
         with tf.name_scope('conv' + str(layer_number)):
             w = self._weight_variable(filter_shape, name='W')
-            b = self._bias_variable([layer_spec['convolution']['filter']['outchannels']], name='b')
+            b = self._bias_variable([layer_spec['filter']['outchannels']], name='b')
             conv = tf.nn.conv2d(input_tensor, w, strides=filter_strides, padding='SAME')
             activation = getattr(tf.nn, layer_spec['activation_function'])(conv + b, name='activation')
         return activation

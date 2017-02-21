@@ -5,43 +5,36 @@
   "validate_each_n_steps": 10,
   "max_number_of_iterations": 2,
   "max_runtime": 10,
-  "hyperparameters":
-  {
-    "learningrate": 1e-4,
+  "hyperparameters": {
+    "learningrate": 0.0001,
     "optimizer": "AdamOptimizer",
     "batchsize": 50
   },
-  "layers":
-  [
+  "layers": [
     {
       "type": "conv_layer",
-      "convolution": {
-        "filter": {
-          "height": 5,
-          "width": 5,
-          "outchannels": 32
-        },
-        "strides": {
-          "x": 1,
-          "y": 1,
-          "inchannels": 1,
-          "batch": 1
-        }
-
+      "filter": {
+        "height": 5,
+        "width": 5,
+        "outchannels": 32
       },
+      "strides": {
+        "x": 1,
+        "y": 1,
+        "inchannels": 1,
+        "batch": 1
+    },
       "activation_function": "relu"
     },
     {
       "type": "maxpool_layer",
-      "kernel":
-      {
+      "kernel": {
         "height": 2,
         "width": 2,
         "inchannels": 1,
         "outchannels": 1
       },
-      "strides":
-      {
+      "strides": {
         "y": 2,
         "x": 2,
         "inchannels": 1,
@@ -62,21 +55,18 @@
           "inchannels": 1,
           "batch": 1
         }
-
       },
       "activation_function": "relu"
     },
     {
       "type": "maxpool_layer",
-      "kernel":
-      {
+      "kernel": {
         "height": 2,
         "width": 2,
         "inchannels": 1,
         "outchannels": 1
       },
-      "strides":
-      {
+      "strides": {
         "y": 2,
         "x": 2,
         "inchannels": 1,
@@ -93,7 +83,5 @@
       "size": 256,
       "activation_function": "tanh"
     }
-
   ]
-
 }
