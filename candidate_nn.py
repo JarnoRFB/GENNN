@@ -16,6 +16,9 @@ class CandidateNN:
                          'RMSPropOptimizer', 'GradientDescentOptimizer')
     ACTIVATION_CHOICES = ('relu', 'relu6', 'sigmoid', 'tanh', 'elu', 'softplus', 'softsign')
     LAYER_TYPES = ("conv_layer", "maxpool_layer", "feedforward_layer")
+    ACCURACY_WEIGHT = 20
+    LAYER_CNT_WEIGHT = 2
+    WEIGHTS_CNT_WEIGHT = 0.1
     OPTIMIZING_PARMS = {
         'conv_layer':
         [
@@ -124,8 +127,7 @@ class CandidateNN:
         ]
     }
 
-    ACCURACY_WEIGHT = 20
-    LAYER_CNT_WEIGHT = 2
+
 
     def __init__(self, candidate_id, start_time_str, runtime_spec, network_spec=None ):
         self.runtime_spec = copy.deepcopy(runtime_spec)
@@ -145,7 +147,6 @@ class CandidateNN:
         self.runtime_spec['logdir'] = os.path.join(self._base_logdir, generation_dir, id_dir)
         self.network_spec.update(self.runtime_spec)
 
-
     def crossover(self, crossover_parms, other_candidate):
         self._fitness = None
 
@@ -155,8 +156,6 @@ class CandidateNN:
                                     uniform_method=crossover_parms['uniform_method'])
         else:
             raise ValueError('not implemented crossover strategy')
-
-
 
     def _crossover_uniform(self, crossver_rate, other_candidate, uniform_method):
         """Performs a unifrom Crossover between two Candidates"""
@@ -172,9 +171,9 @@ class CandidateNN:
                     other_candidate.network_spec['layers'][layer_idx] = copy.deepcopy(layer)
                     self.network_spec['layers'][layer_idx] = tmp
                 else:
-                    if ('activation_function' in layer_dict
-                        and 'activation_function' in other_layer_dict
-                        and random.uniform(0, 1) <= crossver_rate):
+                    if ('activation_function' in layer_dict and
+                        'activation_function' in other_layer_dict and
+                        random.uniform(0, 1) <= crossver_rate):
                         layer_dict['activation_function'] = other_layer_dict['activation_function']
 
                     if(layer_dict['type'] == other_layer_dict['type']):
@@ -224,18 +223,19 @@ class CandidateNN:
         """
         self._fitness = None
 
-        #Mutate layer
+        # Mutate layer
         for i, layer_spec in enumerate(self.network_spec['layers']):
-            #Mutate complet layer
+            # Mutate complet layer
             if(random.uniform(0,1)<=(mutation_rate/10)):
                 new_layer_type = random.choice(self.LAYER_TYPES)
                 self.network_spec['layers'][i] = self._create_randomize_layer(layer_type=new_layer_type)
-            else:#Only mutate Values if no new random layer
+            else:
+                # Only mutate Values if no new random layer
                 self._mutate_layer_values(layer_dict=self.network_spec['layers'][i], mutation_rate=mutation_rate)
 
     def _mutate_layer_values(self, layer_dict, mutation_rate):
         """
-        Mutate each value of a layer with a probability of mutation_rate
+        Mutate each value of a layer with a probability of `mutation_rate`.
         """
         if(random.uniform(0,1) <= mutation_rate):
             layer_dict['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
@@ -323,7 +323,8 @@ class CandidateNN:
         """Calculate the fitness based on the network evaluation."""
         # TODO: get the number of weights as penalty?
         return  1 / (- self.ACCURACY_WEIGHT * math.log(results['accuracy'])
-                     + self.LAYER_CNT_WEIGHT * len(self.network_spec['layers']))
+                     + self.LAYER_CNT_WEIGHT * len(self.network_spec['layers'])
+                     + self.WEIGHTS_CNT_WEIGHT * results['n_weights'])
 
     def _create_random_network(self):
         """Construct a random network specification."""
@@ -369,6 +370,8 @@ class CandidateNN:
             layer_spec = self._create_maxpool_layer()
         elif layer_type == 'feedforward_layer':
             layer_spec = self._create_ff_layer()
+        else:
+            raise ValueError('Invalid layer type {}'.format(layer_type))
         return layer_spec
 
     def _create_ff_layer(self):
@@ -427,6 +430,7 @@ class CandidateNN:
             }
         }
         return layer
+
     def _generate_network_layer(self, type):
         # TODO: Implement this!
         raise Exception("Not implemented")
@@ -447,6 +451,7 @@ class CandidateNN:
             else:
                 raise ValueError('length of hierarchy must 1,2 or 3')
         return layer
+
     def _serialze_network_spec(self):
 
         return RangedJSONEncoder().encode(self.network_spec)

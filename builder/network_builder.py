@@ -72,7 +72,14 @@ class Network:
             # Save plots for losses and accuracies.
             self._plot(loss=losses, accuracy=accuracies)
 
-            extended_spec = self._extend_network_spec(accuracy=float(validation_accuracies.mean()))
+            # Get total number of weights.
+            n_weights = 0
+
+            for var in tf.trainable_variables():
+                n_weights += get_tensor_size(var)
+
+            extended_spec = self._extend_network_spec(accuracy=float(validation_accuracies.mean()),
+                                                      n_weights=n_weights)
 
             # Write extended to logdir.
             self._write_to_logdir(extended_spec, 'network.json')
@@ -122,8 +129,6 @@ class Network:
             conv = tf.nn.conv2d(input_tensor, w, strides=filter_strides, padding='SAME')
             activation = getattr(tf.nn, layer_spec['activation_function'])(conv + b, name='activation')
         return activation
-
-
 
     def maxpool_layer(self, input_tensor, layer_number):
         """Build a maxpooling layer.
@@ -241,7 +246,16 @@ class Network:
         return weighted
 
     def _ensure_2d(self, input_tensor):
+        """Make sure that `input_tensor` can be used for convolution and maxpooling ops.
 
+        Args:
+            input_tensor (tensor): The tensor that potentially has to be converted to 2D.
+
+        Returns:
+            Number of inchannels for the next layer.
+            The `input_tensor` for the next layer.
+
+        """
         if len(input_tensor.get_shape()) > 2:
             inchannels = int(input_tensor.get_shape()[-1])  # inchannels
         else:
