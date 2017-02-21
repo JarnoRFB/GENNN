@@ -166,15 +166,24 @@ class CandidateNN:
                 layer_dict = layer
                 other_layer_dict = other_candidate.network_spec['layers'][layer_idx]
 
-                if (random.uniform(0, 1) <= crossver_rate):
-                    layer_dict['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
+                #Cross whole layer
+                if random.uniform(0, 1) <= crossver_rate / 10:
+                    tmp = copy.deepcopy(other_layer_dict)
+                    other_candidate.network_spec['layers'][layer_idx] = copy.deepcopy(layer)
+                    self.network_spec['layers'][layer_idx] = tmp
+                else:
+                    if ('activation_function' in layer_dict
+                        and 'activation_function' in other_layer_dict
+                        and random.uniform(0, 1) <= crossver_rate):
+                        layer_dict['activation_function'] = other_layer_dict['activation_function']
 
-                if(layer_dict['type'] == other_layer_dict['type']):
-                    self._swap_values(layer_dict,other_layer_dict, crossver_rate)
+                    if(layer_dict['type'] == other_layer_dict['type']):
+                        self._swap_values(layer_dict,other_layer_dict, crossver_rate)
 
 
         else:
             raise ValueError('not implemented uniform_crossover_method')
+
     def _swap_values(self, dict, other_dict,rate):
         """Swaps Properties between two Layers of the same type with Propapility rate"""
         for parm in self.OPTIMIZING_PARMS[dict['type']]:
