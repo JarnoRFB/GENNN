@@ -9,7 +9,7 @@ while(True):
     try:
         genetic_hyperparamter = {
             'population': 10,
-            'calc_diversity': False,
+            'calc_diversity': True,
             'crossover': {
                 'strategy': 'uniform_crossover',
                 'uniform_method': 'swap',
