@@ -145,20 +145,17 @@ class CandidateNN:
         self.runtime_spec['logdir'] = os.path.join(self._base_logdir, generation_dir, id_dir)
         self.network_spec.update(self.runtime_spec)
 
-
     def crossover(self, crossover_parms, other_candidate):
         self._fitness = None
 
         if crossover_parms['strategy'] == 'uniform_crossover':
-            self._crossover_uniform(crossver_rate=crossover_parms['rate'],
+            self._crossover_uniform(crossover_rate=crossover_parms['rate'],
                                     other_candidate= other_candidate,
                                     uniform_method=crossover_parms['uniform_method'])
         else:
             raise ValueError('not implemented crossover strategy')
 
-
-
-    def _crossover_uniform(self, crossver_rate, other_candidate, uniform_method):
+    def _crossover_uniform2(self, crossover_rate, other_candidate, uniform_method):
         """Performs a unifrom Crossover between two Candidates"""
         if(uniform_method == 'swap'):
             min_layers = min(len(self.network_spec['layers']),len(other_candidate.network_spec['layers']))
@@ -167,24 +164,43 @@ class CandidateNN:
                 other_layer_dict = other_candidate.network_spec['layers'][layer_idx]
 
                 #Cross whole layer
-                if random.uniform(0, 1) <= crossver_rate / 10:
+                if random.uniform(0, 1) <= crossover_rate / 10:
                     tmp = copy.deepcopy(other_layer_dict)
                     other_candidate.network_spec['layers'][layer_idx] = copy.deepcopy(layer)
                     self.network_spec['layers'][layer_idx] = tmp
                 else:
                     if ('activation_function' in layer_dict
                         and 'activation_function' in other_layer_dict
-                        and random.uniform(0, 1) <= crossver_rate):
+                        and random.uniform(0, 1) <= crossover_rate):
                         layer_dict['activation_function'] = other_layer_dict['activation_function']
 
                     if(layer_dict['type'] == other_layer_dict['type']):
-                        self._swap_values(layer_dict,other_layer_dict, crossver_rate)
-
+                        self._swap_values(layer_dict, other_layer_dict, crossover_rate)
 
         else:
             raise ValueError('not implemented uniform_crossover_method')
 
-    def _swap_values(self, dict, other_dict,rate):
+    def _crossover_uniform(self, crossover_rate, other_candidate, uniform_method):
+        min_layers = min(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
+        num_layer_crossover = max(1,int(min_layers * crossover_rate))
+
+        for swap_idx in range(num_layer_crossover):
+            layer_idx1 = random.randint(0,len(self.network_spec['layers'])-1)
+            layer_idx2 = random.randint(0,len(other_candidate.network_spec['layers'])-1)
+            print(str(layer_idx1)+":"+str(layer_idx2))
+            if(random.uniform(0,1)<=(crossover_rate/5)):       #Cross complete layer
+                print("Cross complete")
+                tmp = self.network_spec['layers'][layer_idx1]
+                self.network_spec['layers'][layer_idx1] = other_candidate.network_spec['layers'][layer_idx2]
+                other_candidate.network_spec['layers'][layer_idx2] = tmp
+            elif (self.network_spec['layers'][layer_idx1]['type'] == other_candidate.network_spec['layers'][layer_idx2]['type']
+                and random.uniform(0,1)<=crossover_rate):    #Same Type and cross elementwise
+                print("cross parm")
+                self._swap_values(self.network_spec['layers'][layer_idx1], other_candidate.network_spec['layers'][layer_idx2],crossover_rate)
+
+
+
+    def _swap_values(self, dict, other_dict, rate):
         """Swaps Properties between two Layers of the same type with Propapility rate"""
         for parm in self.OPTIMIZING_PARMS[dict['type']]:
             if random.uniform(0,1)<=rate:
