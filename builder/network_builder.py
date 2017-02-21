@@ -56,11 +56,10 @@ class Network:
                     # Check whether training has taken too long.
                     if (datetime.datetime.now() - start_time).seconds // 60 > self.network_spec['max_runtime']:
                         break
-            start_idx = 0
-            end_idx = 1000
+
             results = sess.run([self.accuracy],
-                               feed_dict={self.x: mnist.validation.images[start_idx:end_idx],
-                                          self.y_: mnist.validation.labels[start_idx:end_idx]})
+                               feed_dict={self.x: mnist.validation.images,
+                                          self.y_: mnist.validation.labels})
             # Save plots for losses and accuracies.
             self._plot(loss=losses, accuracy=accuracies)
 
