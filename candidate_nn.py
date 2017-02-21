@@ -20,43 +20,43 @@ class CandidateNN:
         'conv_layer':
         [
             {'parms':
-                {'hierarchi': ['convolution', 'filter', 'height'],
+                {'hierarchi': ['filter', 'height'],
                  'min': 1,
                  'max': 5,
                  'type': 'int'}
             },
             {'parms':
-                {'hierarchi': ['convolution', 'filter', 'width'],
+                {'hierarchi': ['filter', 'width'],
                  'min': 1,
                  'max': 5,
                  'type': 'int'}
             },
             {'parms':
-                {'hierarchi': ['convolution', 'filter', 'outchannels'],
+                {'hierarchi': ['filter', 'outchannels'],
                  'min': 1,
                  'max': 64,
                  'type': 'int'}
             },
             {'parms':
-                 {'hierarchi': ['convolution', 'strides', 'x'],
+                 {'hierarchi': ['strides', 'x'],
                   'min': 1,
                   'max': 2,
                   'type': 'int'}
             },
             {'parms':
-                 {'hierarchi': ['convolution', 'strides', 'y'],
+                 {'hierarchi': ['strides', 'y'],
                   'min': 1,
                   'max': 2,
                   'type': 'int'}
              },
             {'parms':
-                 {'hierarchi': ['convolution', 'strides', 'inchannels'],
+                 {'hierarchi': ['strides', 'inchannels'],
                   'min': 1,
                   'max': 1,
                   'type': 'int'}
              },
             {'parms':
-                 {'hierarchi': ['convolution', 'strides', 'batch'],
+                 {'hierarchi': ['strides', 'batch'],
                   'min': 1,
                   'max': 1,
                   'type': 'int'}
@@ -390,19 +390,16 @@ class CandidateNN:
         """
         layer = {
             'type': 'conv_layer',
-            'convolution': {
-                'filter': {
-                    'height': RangedInt(1, 5),
-                    'width': RangedInt(1, 5),
-                    'outchannels': RangedInt(1, 64)
-                },
-                'strides': {
-                    'x': RangedInt(1, 2),
-                    'y': RangedInt(1, 2),
-                    'inchannels': 1,  # Must be 1. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
-                    'batch': 1
-                }
-
+            'filter': {
+                'height': RangedInt(1, 5),
+                'width': RangedInt(1, 5),
+                'outchannels': RangedInt(1, 64)
+            },
+            'strides': {
+                'x': RangedInt(1, 2),
+                'y': RangedInt(1, 2),
+                'inchannels': 1,  # Must be 1. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
+                'batch': 1
             },
             'activation_function': random.choice(self.ACTIVATION_CHOICES)
         }

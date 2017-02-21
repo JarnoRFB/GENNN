@@ -8,7 +8,7 @@ import os
 import datetime
 import math
 
-mnist = input_data.read_data_sets('MNIST_data', one_hot=False, reshape=False)
+mnist = input_data.read_data_sets('MNIST_data', one_hot=False, reshape=False, validation_size=5000)
 
 
 class Network:
@@ -30,13 +30,13 @@ class Network:
         """Evaluate performance of network.
 
         Returns:
-            The accuracy on the test data.
+            The accuracy on the validation data.
         """
 
         merged_summary = tf.summary.merge_all()
         # Time when starting the training.
         start_time = datetime.datetime.now()
-        # Arrays for storying intermediate results.
+        # Arrays for storing intermediate results.
         losses = np.zeros(self.network_spec['max_number_of_iterations'] // self.network_spec['validate_each_n_steps'])
         accuracies = np.zeros(self.network_spec['max_number_of_iterations'] // self.network_spec['validate_each_n_steps'])
         with tf.Session() as sess:
@@ -59,8 +59,8 @@ class Network:
             start_idx = 0
             end_idx = 1000
             results = sess.run([self.accuracy],
-                               feed_dict={self.x: mnist.test.images[start_idx:end_idx],
-                                          self.y_: mnist.test.labels[start_idx:end_idx]})
+                               feed_dict={self.x: mnist.validation.images[start_idx:end_idx],
+                                          self.y_: mnist.validation.labels[start_idx:end_idx]})
             # Save plots for losses and accuracies.
             self._plot(loss=losses, accuracy=accuracies)
 
@@ -100,17 +100,17 @@ class Network:
         inchannels, input_tensor = self._ensure_2d(input_tensor)
 
         layer_spec = self.network_spec['layers'][layer_number]
-        filter_shape = (layer_spec['convolution']['filter']['height'],
-                        layer_spec['convolution']['filter']['width'],
+        filter_shape = (layer_spec['filter']['height'],
+                        layer_spec['filter']['width'],
                         inchannels,
-                        layer_spec['convolution']['filter']['outchannels'])
-        filter_strides = (layer_spec['convolution']['strides']['inchannels'],
-                          layer_spec['convolution']['strides']['x'],
-                          layer_spec['convolution']['strides']['y'],
-                          layer_spec['convolution']['strides']['batch'])
+                        layer_spec['filter']['outchannels'])
+        filter_strides = (layer_spec['strides']['inchannels'],
+                          layer_spec['strides']['x'],
+                          layer_spec['strides']['y'],
+                          layer_spec['strides']['batch'])
         with tf.name_scope('conv' + str(layer_number)):
             w = self._weight_variable(filter_shape, name='W')
-            b = self._bias_variable([layer_spec['convolution']['filter']['outchannels']], name='b')
+            b = self._bias_variable([layer_spec['filter']['outchannels']], name='b')
             conv = tf.nn.conv2d(input_tensor, w, strides=filter_strides, padding='SAME')
             activation = getattr(tf.nn, layer_spec['activation_function'])(conv + b, name='activation')
         return activation
