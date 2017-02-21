@@ -190,17 +190,14 @@ class CandidateNN:
         for swap_idx in range(num_layer_crossover):
             layer_idx1 = random.randint(0,len(self.network_spec['layers'])-1)
             layer_idx2 = random.randint(0,len(other_candidate.network_spec['layers'])-1)
-            print(str(layer_idx1)+":"+str(layer_idx2))
 
             if(random.uniform(0,1)<=(crossover_rate/2)):       #Cross complete layer with lower probability
-                print("Cross complete")
                 tmp = self.network_spec['layers'][layer_idx1]
                 self.network_spec['layers'][layer_idx1] = other_candidate.network_spec['layers'][layer_idx2]
                 other_candidate.network_spec['layers'][layer_idx2] = tmp
 
             elif (self.network_spec['layers'][layer_idx1]['type'] == other_candidate.network_spec['layers'][layer_idx2]['type']
                 and random.uniform(0,1)<=crossover_rate):    #Same Type and cross elementwise
-                print("cross parm")
                 self._swap_values(self.network_spec['layers'][layer_idx1],
                                   other_candidate.network_spec['layers'][layer_idx2],crossover_rate)
                 #Cross activation functino
