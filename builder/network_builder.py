@@ -8,7 +8,8 @@ import os
 import datetime
 import math
 
-mnist = input_data.read_data_sets('MNIST_data', one_hot=False, reshape=False, validation_size=5000)
+VALIDATION_SIZE = 5000
+mnist = input_data.read_data_sets('MNIST_data', one_hot=False, reshape=False, validation_size=VALIDATION_SIZE)
 
 
 class Network:
@@ -57,13 +58,21 @@ class Network:
                     if (datetime.datetime.now() - start_time).seconds // 60 > self.network_spec['max_runtime']:
                         break
 
-            results = sess.run([self.accuracy],
-                               feed_dict={self.x: mnist.validation.images,
-                                          self.y_: mnist.validation.labels})
+            # Since data is to big to fit in GPU, split data into chunks of 1000 and calculate the mean.
+            chunk_size = 1000
+            steps = int(VALIDATION_SIZE / chunk_size)
+            validation_accuracies = np.zeros(steps)
+
+            for i in range(steps):
+                validation_accuracies[i] = sess.run(
+                    self.accuracy,
+                    feed_dict={self.x: mnist.validation.images[i * chunk_size:(i+1) * chunk_size],
+                    self.y_: mnist.validation.labels[i * chunk_size:(i+1) * chunk_size]}
+                )
             # Save plots for losses and accuracies.
             self._plot(loss=losses, accuracy=accuracies)
 
-            extended_spec = self._extend_network_spec(accuracy=float(results[0]))
+            extended_spec = self._extend_network_spec(accuracy=float(validation_accuracies.mean()))
 
             # Write extended to logdir.
             self._write_to_logdir(extended_spec, 'network.json')

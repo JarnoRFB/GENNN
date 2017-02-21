@@ -20,43 +20,43 @@ class CandidateNN:
         'conv_layer':
         [
             {'parms':
-                {'hierarchi': ['filter', 'height'],
+                {'hierarchy': ['filter', 'height'],
                  'min': 1,
                  'max': 5,
                  'type': 'int'}
             },
             {'parms':
-                {'hierarchi': ['filter', 'width'],
+                {'hierarchy': ['filter', 'width'],
                  'min': 1,
                  'max': 5,
                  'type': 'int'}
             },
             {'parms':
-                {'hierarchi': ['filter', 'outchannels'],
+                {'hierarchy': ['filter', 'outchannels'],
                  'min': 1,
                  'max': 64,
                  'type': 'int'}
             },
             {'parms':
-                 {'hierarchi': ['strides', 'x'],
+                 {'hierarchy': ['strides', 'x'],
                   'min': 1,
                   'max': 2,
                   'type': 'int'}
             },
             {'parms':
-                 {'hierarchi': ['strides', 'y'],
+                 {'hierarchy': ['strides', 'y'],
                   'min': 1,
                   'max': 2,
                   'type': 'int'}
              },
             {'parms':
-                 {'hierarchi': ['strides', 'inchannels'],
+                 {'hierarchy': ['strides', 'inchannels'],
                   'min': 1,
                   'max': 1,
                   'type': 'int'}
              },
             {'parms':
-                 {'hierarchi': ['strides', 'batch'],
+                 {'hierarchy': ['strides', 'batch'],
                   'min': 1,
                   'max': 1,
                   'type': 'int'}
@@ -65,49 +65,49 @@ class CandidateNN:
         'maxpool_layer':
          [
              {'parms':
-                  {'hierarchi': ['kernel', 'height'],
+                  {'hierarchy': ['kernel', 'height'],
                    'min': 1,
                    'max': 5,
                    'type': 'int'}
               },
              {'parms':
-                  {'hierarchi': ['kernel', 'width'],
+                  {'hierarchy': ['kernel', 'width'],
                    'min': 1,
                    'max': 5,
                    'type': 'int'}
               },
              {'parms':
-                  {'hierarchi': ['kernel', 'inchannels'],
+                  {'hierarchy': ['kernel', 'inchannels'],
                    'min': 1,
                    'max': 1,
                    'type': 'int'}
               },
              {'parms':
-                  {'hierarchi': ['kernel', 'outchannels'],
+                  {'hierarchy': ['kernel', 'outchannels'],
                    'min': 1,
                    'max': 1,
                    'type': 'int'}
               },
              {'parms':
-                  {'hierarchi': ['strides', 'x'],
+                  {'hierarchy': ['strides', 'x'],
                    'min': 1,
                    'max': 5,
                    'type': 'int'}
               },
              {'parms':
-                  {'hierarchi': ['strides', 'y'],
+                  {'hierarchy': ['strides', 'y'],
                    'min': 1,
                    'max': 5,
                    'type': 'int'}
               },
              {'parms':
-                  {'hierarchi': ['strides', 'inchannels'],
+                  {'hierarchy': ['strides', 'inchannels'],
                    'min': 1,
                    'max': 1,
                    'type': 'int'}
               },
              {'parms':
-                  {'hierarchi': ['strides', 'batch'],
+                  {'hierarchy': ['strides', 'batch'],
                    'min': 1,
                    'max': 1,
                    'type': 'int'}
@@ -116,7 +116,7 @@ class CandidateNN:
         'feedforward_layer':
         [
             {'parms':
-                 {'hierarchi': ['size'],
+                 {'hierarchy': ['size'],
                   'min': 256,
                   'max': 2048,
                   'type': 'int'}
@@ -188,7 +188,7 @@ class CandidateNN:
         """Swaps Properties between two Layers of the same type with Propapility rate"""
         for parm in self.OPTIMIZING_PARMS[dict['type']]:
             if random.uniform(0,1)<=rate:
-                parm_h = parm['parms']['hierarchi']
+                parm_h = parm['parms']['hierarchy']
                 if len(parm_h) == 1:
                     # Save old own
                     tmp = dict[parm_h[0]]
@@ -214,7 +214,7 @@ class CandidateNN:
                     # saved in own
                     other_dict[parm_h[0]][parm_h[1]][parm_h[2]] = tmp
                 else:
-                    raise ValueError('length of hierarchi must 1,2 or 3')
+                    raise ValueError('length of hierarchy must 1,2 or 3')
 
     def mutation(self, mutation_rate):
         # TODO: Check the mutation of a layer and the mutation of properties, layer mutation can hide value mutation
@@ -242,7 +242,7 @@ class CandidateNN:
         for parms in self.OPTIMIZING_PARMS[layer_dict['type']]:
             if parms['parms']['max'] != parms['parms']['min']:
 
-                parm_h = parms['parms']['hierarchi']
+                parm_h = parms['parms']['hierarchy']
                 variance = (parms['parms']['max'] - parms['parms']['min']) / 2
                 if variance == 0 :
                     variance = 1
@@ -263,7 +263,7 @@ class CandidateNN:
                                                             variance=variance)
                 else:
 
-                    raise ValueError('length of hierarchi must 1,2 or 3')
+                    raise ValueError('length of hierarchy must 1,2 or 3')
 
 
     def _mutation_value_strategy(self, old_value, variance):
@@ -288,7 +288,7 @@ class CandidateNN:
                     if parms['parms']['max'] == parms['parms']['min']:  #don't check on not mutable parms
                         break
                     mutable_parms += 1
-                    parm_h = parms['parms']['hierarchi']
+                    parm_h = parms['parms']['hierarchy']
                     if len(parm_h) == 1:
                         if layer_dict[parm_h[0]] != other_layer_dict[parm_h[0]]:
                             div_parms += 1
@@ -300,7 +300,7 @@ class CandidateNN:
                             div_parms += 1
                     else:
 
-                        raise ValueError('length of hierarchi must 1,2 or 3')
+                        raise ValueError('length of hierarchy must 1,2 or 3')
                 div += (div_parms/mutable_parms)
             else:
                 div += 1
@@ -432,7 +432,7 @@ class CandidateNN:
         raise Exception("Not implemented")
         for parms in self.OPTIMIZING_PARMS[type]:
             parm = parms['parms']
-            parm_h = parm['hierarchi']
+            parm_h = parm['hierarchy']
             layer = dict()
             layer['type'] = type
             layer['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
@@ -445,7 +445,7 @@ class CandidateNN:
                 #layer[parm_h[0]][parm_h[1]][parm_h[2]] = RangedInt(min=parm['min'], max=parm['max'])
                 raise Exception("Not implemented")
             else:
-                raise ValueError('length of hierarchi must 1,2 or 3')
+                raise ValueError('length of hierarchy must 1,2 or 3')
         return layer
     def _serialze_network_spec(self):
 
