@@ -8,7 +8,7 @@ import os
 import datetime
 import math
 
-mnist = input_data.read_data_sets('MNIST_data', one_hot=False, reshape=False)
+mnist = input_data.read_data_sets('MNIST_data', one_hot=False, reshape=False, validation_size=5000)
 
 
 class Network:
@@ -30,7 +30,7 @@ class Network:
         """Evaluate performance of network.
 
         Returns:
-            The accuracy on the test data.
+            The accuracy on the validation data.
         """
 
         merged_summary = tf.summary.merge_all()
@@ -59,8 +59,8 @@ class Network:
             start_idx = 0
             end_idx = 1000
             results = sess.run([self.accuracy],
-                               feed_dict={self.x: mnist.test.images[start_idx:end_idx],
-                                          self.y_: mnist.test.labels[start_idx:end_idx]})
+                               feed_dict={self.x: mnist.validation.images[start_idx:end_idx],
+                                          self.y_: mnist.validation.labels[start_idx:end_idx]})
             # Save plots for losses and accuracies.
             self._plot(loss=losses, accuracy=accuracies)
 
