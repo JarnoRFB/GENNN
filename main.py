@@ -3,7 +3,7 @@ from candidate_nn import CandidateNN
 from utils import RangedNum
 import time
 import os
-
+import traceback
 while(True):
 
     try:
@@ -49,5 +49,5 @@ while(True):
         print(e)
         os.makedirs(genetic_hyperparamter['base_log_dir'], exist_ok=True)
         with open(os.path.join(genetic_hyperparamter['base_log_dir'], 'error.log'), mode='a') as fp:
-            fp.write(time.strftime("%Y.%m.%d-%H.%M.%S", time.gmtime()) + ' error: ' + str(e) + '\n')
+            fp.write(time.strftime("%Y.%m.%d-%H.%M.%S", time.gmtime()) + ' error: ' + str(traceback.format_exc()) + '\n')
         continue
