@@ -165,10 +165,9 @@ class Network:
         everything on a readout layer. Then build loss and the training op.
         """
         # Write extended to logdir.
-        os.makedirs(self.network_spec['logdir'],exist_ok=True)
+        os.makedirs(self.network_spec['logdir'], exist_ok=True)
         self._write_to_logdir(json.dumps(self.network_spec), 'network.json')
-
-
+        # Reset the old graphs from previous candidates.
         tf.reset_default_graph()
         self.x = tf.placeholder(tf.float32, shape=[None, 28, 28, 1], name='input')
         self.y_ = tf.placeholder(tf.int32, shape=[None], name='labels')
@@ -273,7 +272,6 @@ class Network:
         if padding_size != 0:
             padding = tf.zeros(shape=[tf.shape(input_tensor)[0], (side_length ** 2) - flat_size], name='padding')
             input_tensor = tf.concat([input_tensor, padding], axis=1)
-            # input_tensor = tf.pad(input_tensor, [[None, None], [0, (side_length ** 2) - flat_size]], 'CONSTANT', name='padding')
         input_tensor_2d = tf.reshape(input_tensor, [-1, side_length, side_length, 1], name='reshape')
         return input_tensor_2d
 
