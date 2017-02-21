@@ -126,7 +126,6 @@ class CandidateNN:
 
     ACCURACY_WEIGHT = 20
     LAYER_CNT_WEIGHT = 2
-    MAX_LAYERS = 3
 
     def __init__(self, candidate_id, start_time_str, runtime_spec, network_spec=None ):
         self.runtime_spec = copy.deepcopy(runtime_spec)
@@ -290,7 +289,7 @@ class CandidateNN:
         #TODO: should this be done in this class?
         # Finalize runtime specification.
 
-        layer_cnt = RangedInt(1, self.MAX_LAYERS)
+        layer_cnt = RangedInt(1, self.runtime_spec['max_layer'])
 
         network_spec = {
             'hyperparameters': {

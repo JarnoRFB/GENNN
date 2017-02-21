@@ -32,7 +32,8 @@ while(True):
                             'logdir': 'log/',
                             'validate_each_n_steps': 10,
                             'max_number_of_iterations': 600,
-                            'max_runtime': 10}
+                            'max_runtime': 10,
+                            'max_layer': 3}
 
         }
         gen = GA(genetic_hyperparamter)
