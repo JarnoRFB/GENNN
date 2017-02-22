@@ -340,7 +340,7 @@ class CandidateNN:
         max_layers = max(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
         return div/max_layers
 
-    def get_fitness(self, strategy = 'accuracy'):
+    def get_fitness(self, ):
         """Get fitness of the candidate. If not yet tested, test the fitness based on the network specificaton."""
         if(self._fitness is None):
             network = Network(self._serialze_network_spec())
@@ -350,9 +350,9 @@ class CandidateNN:
             print(result_spec)
             del network
 
-            if strategy == 'accuracy':
-                self._fitness = self._fitness_function_accuracy(result_spec, 3)
-            elif strategy == 's1':
+            if self.runtime_spec['fitness_strategy'] == 'accuracy':
+                self._fitness = self._fitness_function_accuracy(result_spec, self.runtime_spec['fitness_power'])
+            elif self.runtime_spec['fitness_strategy'] == 's1':
                 self._fitness = self._fitness_function_s1(result_spec)
             else:
                 raise ("get_fitnesss: Not implemented strategy")
