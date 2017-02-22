@@ -116,6 +116,11 @@ class GA:
         plt.clf()
         plt.close(fig)
 
+        # Calc best Candidate more
+        print("BestID: "+str(self.best_candidate_forever._candidate_id)+ "- Fitness: "+str(round(self.best_candidate_forever.get_fitness()),3))
+        file_loc = os.path.join(self._base_logdir, "besetID")
+        with open(file_loc, 'w') as fd:
+            fd.write(self.best_candidate_forever._candidate_id)
         # Remove running file
         file_loc = os.path.join(self._base_logdir, "_running")
         os.remove(file_loc)
