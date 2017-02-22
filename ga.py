@@ -31,9 +31,17 @@ class GA:
         self.fitness_avg = None
         self.diversity = None
 
-        # Save json
+        # set base_logdir
         self._base_logdir = os.path.join(self._parms['RUNTIME_SPEC']['logdir'], str(self._start_time))
         os.makedirs(self._base_logdir, exist_ok=True)
+
+        # Create running file
+        file_loc = os.path.join(self._base_logdir, "_running")
+        with open(file_loc,'w') as fd:
+            fd.write("running")
+
+        # Save json
+
         file_loc = os.path.join(self._base_logdir, "ga.json")
         with open(file_loc, 'w') as fp:
             fp.write(str(self._parms))
@@ -105,12 +113,22 @@ class GA:
         ax.set_xlabel('Generation')
         ax.legend()
         fig.savefig(file, format='png')
+        plt.clf()
         plt.close(fig)
+
+        # Calc best Candidate more
+        print("BestID: "+str(self.best_candidate_forever._candidate_id)+ "- Fitness: "+str(round(self.best_candidate_forever.get_fitness()),3))
+        file_loc = os.path.join(self._base_logdir, "besetID")
+        with open(file_loc, 'w') as fd:
+            fd.write(self.best_candidate_forever._candidate_id)
+        # Remove running file
+        file_loc = os.path.join(self._base_logdir, "_running")
+        os.remove(file_loc)
 
     def _calc_diversity(self):
         divs = 0
         for idx_from, candidate_from in enumerate(self._population):
-            for candidate_to in self._population[idx_from:]:
+            for candidate_to in self._population[idx_from+1:]:
                 self.diversity += candidate_from.get_diversity(candidate_to)
                 divs += 1
         self.diversity /= divs
