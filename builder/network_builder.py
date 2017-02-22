@@ -57,7 +57,7 @@ class Network:
                     # Check whether training has taken too long.
                     if (datetime.datetime.now() - start_time).seconds // 60 > self.network_spec['max_runtime']:
                         break
-
+            writer.close()
             # Since data is to big to fit in GPU, split data into chunks of 1000 and calculate the mean.
             chunk_size = 1000
             steps = int(VALIDATION_SIZE / chunk_size)
