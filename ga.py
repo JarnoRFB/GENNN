@@ -105,6 +105,7 @@ class GA:
         ax.set_xlabel('Generation')
         ax.legend()
         fig.savefig(file, format='png')
+        plt.clf()
         plt.close(fig)
 
     def _calc_diversity(self):
