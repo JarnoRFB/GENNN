@@ -340,7 +340,7 @@ class CandidateNN:
         max_layers = max(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
         return div/max_layers
 
-    def get_fitness(self):
+    def get_fitness(self, strategy = 'accuracy'):
         """Get fitness of the candidate. If not yet tested, test the fitness based on the network specificaton."""
         if(self._fitness is None):
             network = Network(self._serialze_network_spec())
@@ -348,11 +348,19 @@ class CandidateNN:
             extended_spec = json.loads(extended_spec_json)
             result_spec = extended_spec['results']
             print(result_spec)
-            self._fitness = self._fitness_function(result_spec)
             del network
-        return self._fitness
 
-    def _fitness_function(self, results):
+            if strategy == 'accuracy':
+                self._fitness = self._fitness_function_accuracy(result_spec)
+            elif strategy == 's1':
+                self._fitness = self._fitness_function_s1(result_spec)
+            else:
+                raise ("get_fitnesss: Not implemented strategy")
+        return self._fitness
+    def _fitness_function_accuracy(self, results):
+        return results['accuracy']
+
+    def _fitness_function_s1(self, results):
         """Calculate the fitness based on the network evaluation."""
         # TODO: get the number of weights as penalty?
         return 1 / (- self.ACCURACY_WEIGHT * math.log(results['accuracy'])
