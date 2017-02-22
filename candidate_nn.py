@@ -351,14 +351,14 @@ class CandidateNN:
             del network
 
             if strategy == 'accuracy':
-                self._fitness = self._fitness_function_accuracy(result_spec)
+                self._fitness = self._fitness_function_accuracy(result_spec, 3)
             elif strategy == 's1':
                 self._fitness = self._fitness_function_s1(result_spec)
             else:
                 raise ("get_fitnesss: Not implemented strategy")
         return self._fitness
-    def _fitness_function_accuracy(self, results):
-        return results['accuracy']
+    def _fitness_function_accuracy(self, results, power = 1):
+        return results['accuracy'] ** power
 
     def _fitness_function_s1(self, results):
         """Calculate the fitness based on the network evaluation."""
