@@ -31,9 +31,17 @@ class GA:
         self.fitness_avg = None
         self.diversity = None
 
-        # Save json
+        # set base_logdir
         self._base_logdir = os.path.join(self._parms['RUNTIME_SPEC']['logdir'], str(self._start_time))
         os.makedirs(self._base_logdir, exist_ok=True)
+
+        # Create running file
+        file_loc = os.path.join(self._base_logdir, "_running")
+        with open(file_loc,'w') as fd:
+            fd.write("running")
+
+        # Save json
+
         file_loc = os.path.join(self._base_logdir, "ga.json")
         with open(file_loc, 'w') as fp:
             fp.write(str(self._parms))
@@ -107,6 +115,10 @@ class GA:
         fig.savefig(file, format='png')
         plt.clf()
         plt.close(fig)
+
+        # Remove running file
+        file_loc = os.path.join(self._base_logdir, "_running")
+        os.remove(file_loc)
 
     def _calc_diversity(self):
         divs = 0
