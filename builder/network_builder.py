@@ -67,7 +67,7 @@ class Network:
                 validation_accuracies[i] = sess.run(
                     self.accuracy,
                     feed_dict={self.x: mnist.validation.images[i * chunk_size:(i+1) * chunk_size],
-                    self.y_: mnist.validation.labels[i * chunk_size:(i+1) * chunk_size]}
+                               self.y_: mnist.validation.labels[i * chunk_size:(i+1) * chunk_size]}
                 )
             # Save plots for losses and accuracies.
             self._plot(loss=losses, accuracy=accuracies)
@@ -142,9 +142,8 @@ class Network:
                """
 
         inchannels, input_tensor = self._ensure_2d(input_tensor)
-        #TODO :fix inchannels
         layer_spec = self.network_spec['layers'][layer_number]
-        kernel_shape = (1,
+        kernel_shape = (1,  # First number has to be one for ksize of maxpool layer.
                         layer_spec['kernel']['height'],
                         layer_spec['kernel']['width'],
                         layer_spec['kernel']['outchannels'])
@@ -263,7 +262,8 @@ class Network:
 
         return inchannels, input_tensor
 
-    def _reshape_to_2d(self, input_tensor):
+    @staticmethod
+    def _reshape_to_2d(input_tensor):
 
         # The length of the flat tensor.
         flat_size = int(input_tensor.get_shape()[1])
@@ -288,7 +288,12 @@ class Network:
         return tf.Variable(initial, name=name)
 
     def _write_to_logdir(self, file_str, fname):
+        """Write a string to a file in the logdir.
 
+        Args:
+            file_str: The string to be written to the file.
+            fname: The name of the file.
+        """
         file_loc = os.path.join(self.network_spec['logdir'], fname)
         with open(file_loc, 'w') as fp:
             fp.write(file_str)

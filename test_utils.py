@@ -10,7 +10,7 @@ class RangedNumTest(unittest.TestCase):
         self.ranged_num = RangedNum(self.min, self.max)
 
     def test_init(self):
-        self.assertTrue(self.min <= self.ranged_num <= self.max)
+        self.assertTrue(self.min <= self.ranged_num.value <= self.max)
 
     def test_add(self):
         new_r = self.ranged_num + 5

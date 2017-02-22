@@ -23,8 +23,8 @@ while(True):
             'number_of_generation': 20,
             'selection_strategy': {
                 'type': 'Tournament',
-                'best_win_rate': RangedNum(0.1, 0.9).value,
-                'tournament_size': RangedInt(1, 10).value
+            'best_win_rate': RangedNum(0.1, 0.9).value,
+            'tournament_size': RangedInt(1, 10).value
             },
             'RUNTIME_SPEC': {'id': 1,
                             'datadir': 'MNIST_data',

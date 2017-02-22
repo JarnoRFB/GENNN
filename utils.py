@@ -5,10 +5,10 @@ from json import JSONEncoder
 class RangedNum:
     """Keeps a numeric value in a certain range."""
 
-    def __init__(self, min, max, value=None):
+    def __init__(self, minimum, maximum, value=None):
 
-        self._min = min
-        self._max = max
+        self._min = minimum
+        self._max = maximum
         if value is None:
             self.value = self._get_random()
         else:
@@ -67,8 +67,6 @@ class RangedInt(RangedNum):
 
     def _get_random(self):
         return random.randint(self._min, self._max)
-
-
 
 
 class RangedJSONEncoder(JSONEncoder):
