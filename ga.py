@@ -110,7 +110,7 @@ class GA:
     def _calc_diversity(self):
         divs = 0
         for idx_from, candidate_from in enumerate(self._population):
-            for candidate_to in self._population[idx_from:]:
+            for candidate_to in self._population[idx_from+1:]:
                 self.diversity += candidate_from.get_diversity(candidate_to)
                 divs += 1
         self.diversity /= divs
