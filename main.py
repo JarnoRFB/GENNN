@@ -45,7 +45,7 @@ while(True):
             gen.evaluate(calc_diversity=genetic_hyperparamter['calc_diversity'])
             gen.selection()
 
-            print("Gen: "+str(gen.generation)+"- Fitness_avg: "+str(round(gen.fitness_avg,3))+"- Fitness_best: "+str(round(gen.best_candidate.get_fitness(),3)))
+            print("Gen: "+str(gen.generation)+"-Diversity: "+str(round(gen.diversity))+"- Fitness_avg: "+str(round(gen.fitness_avg,3))+"- Fitness_best: "+str(round(gen.best_candidate.get_fitness(),3)))
         gen.write_stats()
     except Exception as e:
         print(e)
