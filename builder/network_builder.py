@@ -27,7 +27,7 @@ class Network:
         self.train_op = None
         self._build_network()
 
-    def evaluate(self):
+    def evaluate(self, get_weights=False):
         """Evaluate performance of network.
 
         Returns:
@@ -41,6 +41,8 @@ class Network:
         losses = np.zeros(self.network_spec['max_number_of_iterations'] // self.network_spec['validate_each_n_steps'])
         accuracies = np.zeros(self.network_spec['max_number_of_iterations'] // self.network_spec['validate_each_n_steps'])
         with tf.Session() as sess:
+            if(get_weights):
+                saver = tf.train.Saver()
             writer = tf.summary.FileWriter(self.network_spec['logdir'], graph=sess.graph)
             sess.run(tf.global_variables_initializer())
             for i in range(self.network_spec['max_number_of_iterations']):
@@ -83,6 +85,9 @@ class Network:
 
             # Write extended to logdir.
             self._write_to_logdir(extended_spec, 'network.json')
+
+            if(get_weights):
+                save_path = saver.save(sess, self.network_spec['logdir'] + "model.ckpt")
 
             return extended_spec
 
