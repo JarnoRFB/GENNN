@@ -121,7 +121,7 @@ class GA:
               str(round(self.best_candidate_forever.get_fitness(),3)))
         file_loc = os.path.join(self._base_logdir, "besetID")
         with open(file_loc, 'w') as fd:
-            fd.write(self.best_candidate_forever._candidate_id)
+            fd.write(str(self.best_candidate_forever._candidate_id))
         # Remove running file
         file_loc = os.path.join(self._base_logdir, "_running")
         os.remove(file_loc)
