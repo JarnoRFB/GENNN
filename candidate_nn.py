@@ -271,7 +271,7 @@ class CandidateNN:
                 # Get random index for deletion.
                 deletion_idx = random.randint(0, len(self.network_spec['layers']) - 1)
                 # Delete one of the layers.
-                del self.network_spec[deletion_idx]
+                del self.network_spec['layers'][deletion_idx]
 
         # Mutate layer
         for i, layer_spec in enumerate(self.network_spec['layers']):

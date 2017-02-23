@@ -32,7 +32,7 @@ while(True):
                             'validate_each_n_steps': 10,
                             'max_number_of_iterations': 600,
                             'max_runtime': 10,
-                            'max_layer': 3,
+                            'max_layer': 5,
                             'fitness_strategy': 'accuracy',
                             'fitness_power': 3}
 
