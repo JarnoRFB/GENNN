@@ -9,7 +9,6 @@ import logging
 
 
 class CandidateNN:
-
     # ---------------------- Static class attributes ----------------------
 
     OPTIMIZER_CHOICES = ('AdamOptimizer', 'AdadeltaOptimizer', 'AdagradOptimizer',
@@ -22,110 +21,110 @@ class CandidateNN:
     WEIGHTS_CNT_WEIGHT = 0.1
     OPTIMIZING_PARMS = {
         'conv_layer':
-        [
-            {'parms':
-                {'hierarchy': ['filter', 'height'],
-                 'min': 1,
-                 'max': 5,
-                 'type': 'int'}
-            },
-            {'parms':
-                {'hierarchy': ['filter', 'width'],
-                 'min': 1,
-                 'max': 5,
-                 'type': 'int'}
-            },
-            {'parms':
-                {'hierarchy': ['filter', 'outchannels'],
-                 'min': 1,
-                 'max': 64,
-                 'type': 'int'}
-            },
-            {'parms':
-                 {'hierarchy': ['strides', 'x'],
-                  'min': 1,
-                  'max': 2,
-                  'type': 'int'}
-            },
-            {'parms':
-                 {'hierarchy': ['strides', 'y'],
-                  'min': 1,
-                  'max': 2,
-                  'type': 'int'}
-             },
-            {'parms':
-                 {'hierarchy': ['strides', 'inchannels'],
-                  'min': 1,
-                  'max': 1,
-                  'type': 'int'}
-             },
-            {'parms':
-                 {'hierarchy': ['strides', 'batch'],
-                  'min': 1,
-                  'max': 1,
-                  'type': 'int'}
-             },
-        ],
+            [
+                {'parms':
+                     {'hierarchy': ['filter', 'height'],
+                      'min': 1,
+                      'max': 5,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['filter', 'width'],
+                      'min': 1,
+                      'max': 5,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['filter', 'outchannels'],
+                      'min': 1,
+                      'max': 64,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['strides', 'x'],
+                      'min': 1,
+                      'max': 2,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['strides', 'y'],
+                      'min': 1,
+                      'max': 2,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['strides', 'inchannels'],
+                      'min': 1,
+                      'max': 1,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['strides', 'batch'],
+                      'min': 1,
+                      'max': 1,
+                      'type': 'int'}
+                 },
+            ],
         'maxpool_layer':
-         [
-             {'parms':
-                  {'hierarchy': ['kernel', 'height'],
-                   'min': 1,
-                   'max': 5,
-                   'type': 'int'}
-              },
-             {'parms':
-                  {'hierarchy': ['kernel', 'width'],
-                   'min': 1,
-                   'max': 5,
-                   'type': 'int'}
-              },
-             {'parms':
-                  {'hierarchy': ['kernel', 'inchannels'],
-                   'min': 1,
-                   'max': 1,
-                   'type': 'int'}
-              },
-             {'parms':
-                  {'hierarchy': ['kernel', 'outchannels'],
-                   'min': 1,
-                   'max': 1,
-                   'type': 'int'}
-              },
-             {'parms':
-                  {'hierarchy': ['strides', 'x'],
-                   'min': 1,
-                   'max': 5,
-                   'type': 'int'}
-              },
-             {'parms':
-                  {'hierarchy': ['strides', 'y'],
-                   'min': 1,
-                   'max': 5,
-                   'type': 'int'}
-              },
-             {'parms':
-                  {'hierarchy': ['strides', 'inchannels'],
-                   'min': 1,
-                   'max': 1,
-                   'type': 'int'}
-              },
-             {'parms':
-                  {'hierarchy': ['strides', 'batch'],
-                   'min': 1,
-                   'max': 1,
-                   'type': 'int'}
-              }
-         ],
+            [
+                {'parms':
+                     {'hierarchy': ['kernel', 'height'],
+                      'min': 1,
+                      'max': 5,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['kernel', 'width'],
+                      'min': 1,
+                      'max': 5,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['kernel', 'inchannels'],
+                      'min': 1,
+                      'max': 1,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['kernel', 'outchannels'],
+                      'min': 1,
+                      'max': 1,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['strides', 'x'],
+                      'min': 1,
+                      'max': 5,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['strides', 'y'],
+                      'min': 1,
+                      'max': 5,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['strides', 'inchannels'],
+                      'min': 1,
+                      'max': 1,
+                      'type': 'int'}
+                 },
+                {'parms':
+                     {'hierarchy': ['strides', 'batch'],
+                      'min': 1,
+                      'max': 1,
+                      'type': 'int'}
+                 }
+            ],
         'feedforward_layer':
-        [
-            {'parms':
-                 {'hierarchy': ['size'],
-                  'min': 256,
-                  'max': 2048,
-                  'type': 'int'}
-             }
-        ]
+            [
+                {'parms':
+                     {'hierarchy': ['size'],
+                      'min': 256,
+                      'max': 2048,
+                      'type': 'int'}
+                 }
+            ]
     }
 
     def __init__(self, candidate_id, start_time_str, runtime_spec, network_spec=None):
@@ -156,72 +155,71 @@ class CandidateNN:
         else:
             raise ValueError('not implemented crossover strategy')
 
-
     def _crossover_uniform2(self, crossover_rate, other_candidate, uniform_method):
         """Performs a unifrom Crossover between two Candidates"""
         if uniform_method == 'swap':
-            min_layers = min(len(self.network_spec['layers']),len(other_candidate.network_spec['layers']))
+            min_layers = min(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
             for layer_idx, layer in enumerate(self.network_spec['layers'][:min_layers]):
                 layer_dict = layer
                 other_layer_dict = other_candidate.network_spec['layers'][layer_idx]
 
-                #Cross whole layer
+                # Cross whole layer
                 if random.uniform(0, 1) <= crossover_rate / 5:
                     tmp = copy.deepcopy(other_layer_dict)
                     other_candidate.network_spec['layers'][layer_idx] = copy.deepcopy(layer)
                     self.network_spec['layers'][layer_idx] = tmp
                 else:
-                    if ('activation_function' in layer_dict
-                        and 'activation_function' in other_layer_dict
-                        and random.uniform(0, 1) <= crossover_rate):
+                    if ('activation_function' in layer_dict and
+                        'activation_function' in other_layer_dict and
+                        random.uniform(0, 1) <= crossover_rate):
+
                         layer_dict['activation_function'] = other_layer_dict['activation_function']
 
-                    if(layer_dict['type'] == other_layer_dict['type']):
+                    if layer_dict['type'] == other_layer_dict['type']:
                         self._swap_values(layer_dict, other_layer_dict, crossover_rate)
 
 
         else:
-            raise ValueError('not implemented uniform_crossover_method')
-
+            raise NotImplementedError('Not implemented uniform_crossover_method')
 
     def _crossover_uniform(self, crossover_rate, other_candidate, uniform_method):
         min_layers = min(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
-        num_layer_crossover = max(1,int(min_layers * crossover_rate))
+        num_layer_crossover = max(1, int(min_layers * crossover_rate))
 
         for swap_idx in range(num_layer_crossover):
-            layer_idx1 = random.randint(0,len(self.network_spec['layers'])-1)
-            layer_idx2 = random.randint(0,len(other_candidate.network_spec['layers'])-1)
+            layer_idx1 = random.randint(0, len(self.network_spec['layers']) - 1)
+            layer_idx2 = random.randint(0, len(other_candidate.network_spec['layers']) - 1)
 
             # If type is the same
-            if self.network_spec['layers'][layer_idx1]['type'] == other_candidate.network_spec['layers'][layer_idx2]['type']:
-                #Make complete or parm cross
-                if(random.uniform(0,1)<=0.5):       #Cross complete layer with lower probability
+            if self.network_spec['layers'][layer_idx1]['type'] == other_candidate.network_spec['layers'][layer_idx2][
+                'type']:
+                # Make complete or parm cross
+                if (random.uniform(0, 1) <= 0.5):  # Cross complete layer with lower probability
                     logging.info("crossing:sameType:layer")
                     tmp = self.network_spec['layers'][layer_idx1]
                     self.network_spec['layers'][layer_idx1] = other_candidate.network_spec['layers'][layer_idx2]
                     other_candidate.network_spec['layers'][layer_idx2] = tmp
 
-                else:                               #Same Type and cross elementwise
+                else:  # Same Type and cross elementwise
                     logging.info("crossing:sameType:parms")
                     self._swap_values(self.network_spec['layers'][layer_idx1],
-                                      other_candidate.network_spec['layers'][layer_idx2],crossover_rate)
-                    #Cross activation functino
+                                      other_candidate.network_spec['layers'][layer_idx2], crossover_rate)
+                    # Cross activation functino
                     if ('activation_function' in self.network_spec['layers'][layer_idx1]
                         and 'activation_function' in other_candidate.network_spec['layers'][layer_idx2]
                         and random.uniform(0, 1) <= crossover_rate):
                         self.network_spec['layers'][layer_idx1]['activation_function'] \
                             = other_candidate.network_spec['layers'][layer_idx2]['activation_function']
-            else: #not the same, swap layer
+            else:  # not the same, swap layer
                 logging.info("crossing:layer")
                 tmp = self.network_spec['layers'][layer_idx1]
                 self.network_spec['layers'][layer_idx1] = other_candidate.network_spec['layers'][layer_idx2]
                 other_candidate.network_spec['layers'][layer_idx2] = tmp
 
-
     def _swap_values(self, dict, other_dict, rate):
         """Swaps Properties between two Layers of the same type with Propapility rate"""
         for parm in self.OPTIMIZING_PARMS[dict['type']]:
-            if random.uniform(0,1)<=rate:
+            if random.uniform(0, 1) <= rate:
                 parm_h = parm['parms']['hierarchy']
                 if len(parm_h) == 1:
                     # Save old own
@@ -261,7 +259,7 @@ class CandidateNN:
         # Mutate layer
         for i, layer_spec in enumerate(self.network_spec['layers']):
             # Mutate complet layer
-            if(random.uniform(0,1)<=(mutation_rate/10)):
+            if random.uniform(0, 1) <= (mutation_rate / 10):
                 new_layer_type = random.choice(self.LAYER_TYPES)
                 self.network_spec['layers'][i] = self._create_randomize_layer(layer_type=new_layer_type)
             else:
@@ -290,12 +288,12 @@ class CandidateNN:
                         variance=variance)
                 elif len(parm_h) == 2:
                     layer_dict[parm_h[0]][parm_h[1]] = self._mutation_value_strategy(
-                                                        old_value=layer_dict[parm_h[0]][parm_h[1]],
-                                                        variance=variance)
+                        old_value=layer_dict[parm_h[0]][parm_h[1]],
+                        variance=variance)
                 elif len(parm_h) == 3:
                     layer_dict[parm_h[0]][parm_h[1]][parm_h[2]] = self._mutation_value_strategy(
-                                                            old_value=layer_dict[parm_h[0]][parm_h[1]][parm_h[2]],
-                                                            variance=variance)
+                        old_value=layer_dict[parm_h[0]][parm_h[1]][parm_h[2]],
+                        variance=variance)
                 else:
 
                     raise ValueError('length of hierarchy must 1,2 or 3')
@@ -334,15 +332,15 @@ class CandidateNN:
                     else:
 
                         raise ValueError('length of hierarchy must 1,2 or 3')
-                div += (div_parms/mutable_parms)
+                div += (div_parms / mutable_parms)
             else:
                 div += 1
         max_layers = max(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
-        return div/max_layers
+        return div / max_layers
 
     def get_fitness(self, ):
         """Get fitness of the candidate. If not yet tested, test the fitness based on the network specificaton."""
-        if(self._fitness is None):
+        if self._fitness is None:
             network = Network(self._serialze_network_spec())
             extended_spec_json = network.evaluate()
             extended_spec = json.loads(extended_spec_json)
@@ -355,9 +353,10 @@ class CandidateNN:
             elif self.runtime_spec['fitness_strategy'] == 's1':
                 self._fitness = self._fitness_function_s1(result_spec)
             else:
-                raise ("get_fitnesss: Not implemented strategy")
+                raise ValueError('fitnesss strategy {} is not implemented.'.format(self.runtime_spec['fitness_strategy']))
         return self._fitness
-    def _fitness_function_accuracy(self, results, power = 1):
+
+    def _fitness_function_accuracy(self, results, power=1):
         return results['accuracy'] ** power
 
     def _fitness_function_s1(self, results):
@@ -393,7 +392,7 @@ class CandidateNN:
 
         for layer_type in layer_types:
             layer_spec = self._create_randomize_layer(layer_type=layer_type)
-            #layer_spec = self._generate_network_layer(type=layer_type)
+            # layer_spec = self._generate_network_layer(type=layer_type)
             # Add layer to the network spec.
             network_spec['layers'].append(layer_spec)
 
@@ -420,10 +419,10 @@ class CandidateNN:
         """
 
         layer = {
-                  'type': 'feedforward_layer',
-                  'size': RangedInt(256, 2048),
-                  'activation_function': random.choice(self.ACTIVATION_CHOICES)
-                }
+            'type': 'feedforward_layer',
+            'size': RangedInt(256, 2048),
+            'activation_function': random.choice(self.ACTIVATION_CHOICES)
+        }
         return layer
 
     def _create_conv_layer(self):
@@ -456,13 +455,15 @@ class CandidateNN:
             'kernel': {
                 'height': RangedInt(1, 5),
                 'width': RangedInt(1, 5),
-                'inchannels': 1, # Must probably be 1 as well. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
+                'inchannels': 1,
+            # Must probably be 1 as well. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
                 'outchannels': 1,
             },
             'strides': {
                 'y': RangedInt(1, 5),
                 'x': RangedInt(1, 5),
-                'inchannels': 1, # Must probably be 1 as well. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
+                'inchannels': 1,
+            # Must probably be 1 as well. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
                 'batch': 1
             }
         }
@@ -470,7 +471,7 @@ class CandidateNN:
 
     def _generate_network_layer(self, type):
         # TODO: Implement this!
-        raise Exception("Not implemented")
+        raise NotImplementedError("_generate_network_layer is not implemented")
         for parms in self.OPTIMIZING_PARMS[type]:
             parm = parms['parms']
             parm_h = parm['hierarchy']
@@ -482,9 +483,9 @@ class CandidateNN:
             elif len(parm_h) == 2:
                 layer[parm_h[0]][parm_h[2]] = RangedInt(min=parm['min'], max=parm['max'])
             elif len(parm_h) == 3:
-                #layer.update({parm_h[0]:{parm_h[1]:{parm_h[2]:RangedInt(min=parm['min'], max=parm['max'])}}})
-                #layer[parm_h[0]][parm_h[1]][parm_h[2]] = RangedInt(min=parm['min'], max=parm['max'])
-                raise Exception("Not implemented")
+                # layer.update({parm_h[0]:{parm_h[1]:{parm_h[2]:RangedInt(min=parm['min'], max=parm['max'])}}})
+                # layer[parm_h[0]][parm_h[1]][parm_h[2]] = RangedInt(min=parm['min'], max=parm['max'])
+                raise NotImplementedError("Not implemented")
             else:
                 raise ValueError('length of hierarchy must 1,2 or 3')
         return layer

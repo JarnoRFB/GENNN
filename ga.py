@@ -37,7 +37,7 @@ class GA:
 
         # Create running file
         file_loc = os.path.join(self._base_logdir, "_running")
-        with open(file_loc,'w') as fd:
+        with open(file_loc, 'w') as fd:
             fd.write("running")
 
         # Save json
@@ -117,7 +117,8 @@ class GA:
         plt.close(fig)
 
         # Calc best Candidate more
-        print("BestID: "+str(self.best_candidate_forever._candidate_id)+ "- Fitness: "+str(round(self.best_candidate_forever.get_fitness()),3))
+        print("BestID: " + str(self.best_candidate_forever._candidate_id) + "- Fitness: " +
+              str(round(self.best_candidate_forever.get_fitness()), 3))
         file_loc = os.path.join(self._base_logdir, "besetID")
         with open(file_loc, 'w') as fd:
             fd.write(self.best_candidate_forever._candidate_id)
@@ -128,7 +129,7 @@ class GA:
     def _calc_diversity(self):
         divs = 0
         for idx_from, candidate_from in enumerate(self._population):
-            for candidate_to in self._population[idx_from+1:]:
+            for candidate_to in self._population[idx_from + 1:]:
                 self.diversity += candidate_from.get_diversity(candidate_to)
                 divs += 1
         self.diversity /= divs
@@ -150,7 +151,7 @@ class GA:
             worst_candidate_idx = min(idx_candidates[0:tournement_size])
 
             if random.random() <= win_rate:
-                #new_population.append(copy.deepcopy(sorted_candidates[best_candidate_idx]))
+                # new_population.append(copy.deepcopy(sorted_candidates[best_candidate_idx]))
                 network_spec_copy = copy.deepcopy(sorted_candidates[best_candidate_idx].network_spec)
                 new_population.append(self._candidate_class(candidate_id=self._candidate_id,
                                                             start_time_str=self._start_time,
@@ -158,7 +159,7 @@ class GA:
                                                             runtime_spec=self._parms['RUNTIME_SPEC']))
                 self._candidate_id += 1
             else:
-                #new_population.append(copy.deepcopy(sorted_candidates[worst_candidate_idx]))
+                # new_population.append(copy.deepcopy(sorted_candidates[worst_candidate_idx]))
                 network_spec_copy = copy.deepcopy(sorted_candidates[worst_candidate_idx].network_spec)
                 new_population.append(self._candidate_class(candidate_id=self._candidate_id,
                                                             start_time_str=self._start_time,
