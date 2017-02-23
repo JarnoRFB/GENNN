@@ -256,12 +256,28 @@ class CandidateNN:
         """
         self._fitness = None
 
+        # Determine whether to change number of layers.
+
+        if random.uniform(0, 1) <= mutation_rate:
+            if random.uniform(0, 1) <= 0.5:
+
+                if len(self.network_spec['layers']) < self.runtime_spec['max_layer']:
+
+                    # Get random index for insertion.
+                    insertion_idx = random.randint(0, len(self.network_spec['layers']))
+                    # Add random layer.
+                    self.network_spec['layers'].insert(insertion_idx, self._create_randomize_layer())
+            else:
+                # Get random index for deletion.
+                deletion_idx = random.randint(0, len(self.network_spec['layers']) - 1)
+                # Delete one of the layers.
+                del self.network_spec[deletion_idx]
+
         # Mutate layer
         for i, layer_spec in enumerate(self.network_spec['layers']):
-            # Mutate complet layer
+            # Mutate complete layer
             if random.uniform(0, 1) <= (mutation_rate / 10):
-                new_layer_type = random.choice(self.LAYER_TYPES)
-                self.network_spec['layers'][i] = self._create_randomize_layer(layer_type=new_layer_type)
+                self.network_spec['layers'][i] = self._create_randomize_layer()
             else:
                 # Only mutate Values if no new random layer
                 self._mutate_layer_values(layer_dict=self.network_spec['layers'][i], mutation_rate=mutation_rate)
@@ -398,10 +414,13 @@ class CandidateNN:
 
         return network_spec
 
-    def _create_randomize_layer(self, layer_type):
+    def _create_randomize_layer(self, layer_type=None):
         """
-        Create a layer based on layer_tape
+        Create a layer based on layer_type
         """
+        if layer_type is None:
+            layer_type = random.choice(self.LAYER_TYPES)
+
         if layer_type == 'conv_layer':
             layer_spec = self._create_conv_layer()
         elif layer_type == 'maxpool_layer':
