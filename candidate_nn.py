@@ -167,22 +167,22 @@ class CandidateNN:
 
     def _swap_values(self, dict, other_dict, rate):
         """Swaps Properties between two Layers of the same type with Propapility rate"""
-        for idx, layer_parm in enumerate(self.OPTIMIZING_PARMS[dict['type']]):
+        for layer_key, layer_parm in self.OPTIMIZING_PARMS[dict['type']].items():
             if flip_coin(rate):
-                if len(layer_parm) == 1:
+                if len(layer_key) == 1:
                     # Save old own
-                    tmp = dict[layer_parm[0]]
+                    tmp = dict[layer_key[0]]
                     # own in other
-                    dict[layer_parm[0]] = other_dict[layer_parm[0]]
+                    dict[layer_key[0]] = other_dict[layer_key[0]]
                     # saved in own
-                    other_dict[layer_parm[0]] = tmp
-                elif len(layer_parm) == 2:
+                    other_dict[layer_key[0]] = tmp
+                elif len(layer_key) == 2:
                     # Save old own
-                    tmp = dict[layer_parm[0]][layer_parm[1]]
+                    tmp = dict[layer_key[0]][layer_key[1]]
                     # own in other
-                    dict[layer_parm[0]][layer_parm[1]] = other_dict[layer_parm[0]][layer_parm[1]]
+                    dict[layer_key[0]][layer_key[1]] = other_dict[layer_key[0]][layer_key[1]]
                     # saved in own
-                    other_dict[layer_parm[0]][layer_parm[1]] = tmp
+                    other_dict[layer_key[0]][layer_key[1]] = tmp
                 else:
                     raise ValueError('length of hierarchy must 1 or 2')
 
@@ -226,7 +226,7 @@ class CandidateNN:
         """
         if flip_coin(mutation_rate):
             layer_spec['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
-        for idx, layer_parm in enumerate(self.OPTIMIZING_PARMS[layer_spec['type']]):
+        for layer_key, layer_parm, in self.OPTIMIZING_PARMS[layer_spec['type']].items():
 
             if layer_parm['max'] != layer_parm['min']:
 
@@ -236,13 +236,13 @@ class CandidateNN:
                 if layer_parm['type'] is RangedInt:
                     variance = round(variance,0)
 
-                if len(layer_parm) == 1:
-                    layer_spec[layer_parm[0]] = self._mutation_value_strategy(
-                        old_value=layer_spec[layer_parm[0]],
+                if len(layer_key) == 1:
+                    layer_spec[layer_key[0]] = self._mutation_value_strategy(
+                        old_value=layer_spec[layer_key[0]],
                         variance=variance)
-                elif len(layer_parm) == 2:
-                    layer_spec[layer_parm[0]][layer_parm[1]] = self._mutation_value_strategy(
-                        old_value=layer_spec[layer_parm[0]][layer_parm[1]],
+                elif len(layer_key) == 2:
+                    layer_spec[layer_key[0]][layer_key[1]] = self._mutation_value_strategy(
+                        old_value=layer_spec[layer_key[0]][layer_key[1]],
                         variance=variance)
                 else:
 
@@ -265,15 +265,15 @@ class CandidateNN:
                 # make deeper compare
                 mutable_parms = 0
                 div_parms = 0
-                for idx, layer_parm in enumerate(self.OPTIMIZING_PARMS[layer_dict['type']]):
+                for layer_key, layer_parm in self.OPTIMIZING_PARMS[layer_dict['type']].items():
                     if layer_parm['max'] == layer_parm['min']:  # don't check on not mutable parms
                         break
                     mutable_parms += 1
-                    if len(layer_parm) == 1:
-                        if layer_dict[layer_parm[0]] != other_layer_dict[layer_parm[0]]:
+                    if len(layer_key) == 1:
+                        if layer_dict[layer_key[0]] != other_layer_dict[layer_key[0]]:
                             div_parms += 1
-                    elif len(layer_parm) == 2:
-                        if layer_dict[layer_parm[0]][layer_parm[1]] != other_layer_dict[layer_parm[0]][layer_parm[1]]:
+                    elif len(layer_key) == 2:
+                        if layer_dict[layer_key[0]][layer_key[1]] != other_layer_dict[layer_key[0]][layer_key[1]]:
                             div_parms += 1
                     else:
 
