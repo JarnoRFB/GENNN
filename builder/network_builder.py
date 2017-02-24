@@ -15,7 +15,7 @@ mnist = input_data.read_data_sets('MNIST_data', one_hot=False, reshape=False, va
 class Network:
     """A nerual network build from a JSON specification."""
 
-    def __init__(self, json_network_spec):
+    def __init__(self, json_network_spec, test=False):
 
         self.network_spec = json.loads(json_network_spec)
         if self.network_spec['max_number_of_iterations'] % self.network_spec['validate_each_n_steps'] != 0:
@@ -26,6 +26,7 @@ class Network:
         self.accuracy = None
         self.train_op = None
         self._build_network()
+        self._test = test
 
     def evaluate(self, get_weights=False):
         """Evaluate performance of network.
@@ -64,13 +65,20 @@ class Network:
             chunk_size = 1000
             steps = int(VALIDATION_SIZE / chunk_size)
             validation_accuracies = np.zeros(steps)
-
-            for i in range(steps):
-                validation_accuracies[i] = sess.run(
-                    self.accuracy,
-                    feed_dict={self.x: mnist.validation.images[i * chunk_size:(i+1) * chunk_size],
-                               self.y_: mnist.validation.labels[i * chunk_size:(i+1) * chunk_size]}
-                )
+            if not self._test:
+                for i in range(steps):
+                    validation_accuracies[i] = sess.run(
+                        self.accuracy,
+                        feed_dict={self.x: mnist.validation.images[i * chunk_size:(i+1) * chunk_size],
+                                   self.y_: mnist.validation.labels[i * chunk_size:(i+1) * chunk_size]}
+                    )
+            else:
+                for i in range(steps):
+                    validation_accuracies = sess.run(
+                        self.accuracy,
+                        feed_dict={self.x: mnist.test.images,
+                                   self.y_: mnist.test.labels}
+                    )
             # Save plots for losses and accuracies.
             self._plot(loss=losses, accuracy=accuracies)
 
