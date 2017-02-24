@@ -364,8 +364,7 @@ class CandidateNN:
 
         layer_skeleton = copy.deepcopy(self.OPTIMIZING_PARMS[layer_type])
         layer_spec = self._traverse_param_spec(layer_skeleton)
-        layer_spec.update(type=layer_type)
-        return layer_spec
+        print(layer_spec)
 
     def _traverse_param_spec(self, param_spec):
 
