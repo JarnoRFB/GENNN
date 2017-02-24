@@ -416,7 +416,7 @@ class CandidateNN:
 
         layer = {
             'type': 'feedforward_layer',
-            'size': self.OPTIMIZING_PARMS['feedforward_layer']['size']['type'](
+            'size': self.OPTIMIZING_PARMS['feedforward_layer']['type'](
                         self.OPTIMIZING_PARMS['feedforward_layer']['size']['min'],
                         self.OPTIMIZING_PARMS['feedforward_layer']['size']['max']),
             'activation_function': random.choice(self.ACTIVATION_CHOICES)
@@ -430,14 +430,14 @@ class CandidateNN:
         layer = {
             'type': 'conv_layer',
             'filter': {
-                'height': self.OPTIMIZING_PARMS['conv_layer']['strides','x']['type'](
+                'height': self.OPTIMIZING_PARMS['conv_layer']['filter','height']['type'](
                     self.OPTIMIZING_PARMS['conv_layer']['filter','height']['min'],
                     self.OPTIMIZING_PARMS['conv_layer']['filter','height']['max']),
-                'width': self.OPTIMIZING_PARMS['conv_layer']['strides','x']['type'](
+                'width': self.OPTIMIZING_PARMS['conv_layer']['filter','width']['type'](
                     self.OPTIMIZING_PARMS['conv_layer']['filter','width']['min'],
                     self.OPTIMIZING_PARMS['conv_layer']['filter','width']['max']),
-                'outchannels': self.OPTIMIZING_PARMS['conv_layer']['strides','x']['type'](
-                    self.OPTIMIZING_PARMS['conv_layer']['filter','height']['min'],
+                'outchannels': self.OPTIMIZING_PARMS['conv_layer']['filter','outchannels']['type'](
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','outchannels']['min'],
                     self.OPTIMIZING_PARMS['conv_layer']['filter','outchannels']['max'])
             },
             'strides': {
@@ -461,19 +461,21 @@ class CandidateNN:
         layer = {
             'type': 'maxpool_layer',
             'kernel': {
-                'height': RangedInt(
-                    self.OPTIMIZING_PARMS['maxpool_layer'][0]['parms']['min'],
-                    self.OPTIMIZING_PARMS['maxpool_layer'][0]['parms']['max']),
-                'width': RangedInt(
-                    self.OPTIMIZING_PARMS['maxpool_layer'][1]['parms']['min'],
-                    self.OPTIMIZING_PARMS['maxpool_layer'][1]['parms']['max']),
+                'height': self.OPTIMIZING_PARMS['maxpool_layer']['kernel','height']['type'](
+                        self.OPTIMIZING_PARMS['maxpool_layer']['kernel','height']['min'],
+                        self.OPTIMIZING_PARMS['maxpool_layer']['kernel','height']['max']),
+                'width': self.OPTIMIZING_PARMS['maxpool_layer']['kernel','width']['type'](
+                        self.OPTIMIZING_PARMS['maxpool_layer']['kernel','width']['min'],
+                        self.OPTIMIZING_PARMS['maxpool_layer']['kernel','width']['max']),
                 'outchannels': 1,
             },
             'strides': {
-                'y': RangedInt(
-                    self.OPTIMIZING_PARMS['maxpool_layer'][4]['parms']['min'],
-                    self.OPTIMIZING_PARMS['maxpool_layer'][4]['parms']['max']),
-                'x': RangedInt(1, 5),
+                'y': self.OPTIMIZING_PARMS['maxpool_layer']['strides','y']['type'](
+                        self.OPTIMIZING_PARMS['maxpool_layer']['strides','y']['min'],
+                        self.OPTIMIZING_PARMS['maxpool_layer']['strides','y']['max']),
+                'x': self.OPTIMIZING_PARMS['maxpool_layer']['strides','x']['type'](
+                        self.OPTIMIZING_PARMS['maxpool_layer']['strides','x']['min'],
+                        self.OPTIMIZING_PARMS['maxpool_layer']['strides','x']['max']),
                 'inchannels': 1,
             # Must probably be 1 as well. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
                 'batch': 1
