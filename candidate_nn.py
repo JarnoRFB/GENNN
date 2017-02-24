@@ -80,12 +80,6 @@ class CandidateNN:
                       'type': 'int'}
                  },
                 {'parms':
-                     {'hierarchy': ['kernel', 'inchannels'],
-                      'min': 1,
-                      'max': 1,
-                      'type': 'int'}
-                 },
-                {'parms':
                      {'hierarchy': ['kernel', 'outchannels'],
                       'min': 1,
                       'max': 1,
@@ -439,7 +433,9 @@ class CandidateNN:
 
         layer = {
             'type': 'feedforward_layer',
-            'size': RangedInt(256, 2048),
+            'size': RangedInt(
+                self.OPTIMIZING_PARMS['feedforward_layer'][0]['parms']['min'],
+                self.OPTIMIZING_PARMS['feedforward_layer'][0]['parms']['max']),
             'activation_function': random.choice(self.ACTIVATION_CHOICES)
         }
         return layer
@@ -474,8 +470,6 @@ class CandidateNN:
             'kernel': {
                 'height': RangedInt(1, 5),
                 'width': RangedInt(1, 5),
-                'inchannels': 1,
-            # Must probably be 1 as well. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
                 'outchannels': 1,
             },
             'strides': {
@@ -486,27 +480,6 @@ class CandidateNN:
                 'batch': 1
             }
         }
-        return layer
-
-    def _generate_network_layer(self, type):
-        # TODO: Implement this!
-        raise NotImplementedError("_generate_network_layer is not implemented")
-        for parms in self.OPTIMIZING_PARMS[type]:
-            parm = parms['parms']
-            parm_h = parm['hierarchy']
-            layer = dict()
-            layer['type'] = type
-            layer['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
-            if len(parm_h) == 1:
-                layer[parm_h[0]] = RangedInt(min=parm['min'], max=parm['max'])
-            elif len(parm_h) == 2:
-                layer[parm_h[0]][parm_h[2]] = RangedInt(min=parm['min'], max=parm['max'])
-            elif len(parm_h) == 3:
-                # layer.update({parm_h[0]:{parm_h[1]:{parm_h[2]:RangedInt(min=parm['min'], max=parm['max'])}}})
-                # layer[parm_h[0]][parm_h[1]][parm_h[2]] = RangedInt(min=parm['min'], max=parm['max'])
-                raise NotImplementedError("Not implemented")
-            else:
-                raise ValueError('length of hierarchy must 1,2 or 3')
         return layer
 
     def _serialze_network_spec(self):

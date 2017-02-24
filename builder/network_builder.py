@@ -146,7 +146,7 @@ class Network:
                    tensor: The max pooled output.
                """
 
-        inchannels, input_tensor = self._ensure_2d(input_tensor)
+        _, input_tensor = self._ensure_2d(input_tensor)
         layer_spec = self.network_spec['layers'][layer_number]
         kernel_shape = (1,  # First number has to be one for ksize of maxpool layer.
                         layer_spec['kernel']['height'],
