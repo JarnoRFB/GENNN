@@ -20,107 +20,88 @@ class CandidateNN:
     LAYER_CNT_WEIGHT = 2
     WEIGHTS_CNT_WEIGHT = 0.1
     OPTIMIZING_PARMS = {
-        'conv_layer':
-            [
-                {'parms':
-                     {'hierarchy': ['filter', 'height'],
-                      'min': 1,
-                      'max': 5,
-                      'type': 'int'}
-                 },
-                {'parms':
-                     {'hierarchy': ['filter', 'width'],
-                      'min': 1,
-                      'max': 5,
-                      'type': 'int'}
-                 },
-                {'parms':
-                     {'hierarchy': ['filter', 'outchannels'],
-                      'min': 1,
-                      'max': 64,
-                      'type': 'int'}
-                 },
-                {'parms':
-                     {'hierarchy': ['strides', 'x'],
-                      'min': 1,
-                      'max': 2,
-                      'type': 'int'}
-                 },
-                {'parms':
-                     {'hierarchy': ['strides', 'y'],
-                      'min': 1,
-                      'max': 2,
-                      'type': 'int'}
-                 },
-                {'parms':
-                     {'hierarchy': ['strides', 'inchannels'],
-                      'min': 1,
-                      'max': 1,
-                      'type': 'int'}
-                 },
-                {'parms':
-                     {'hierarchy': ['strides', 'batch'],
-                      'min': 1,
-                      'max': 1,
-                      'type': 'int'}
-                 },
-            ],
-        'maxpool_layer':
-            [
-                {'parms':
-                     {'hierarchy': ['kernel', 'height'],
-                      'min': 1,
-                      'max': 5,
-                      'type': 'int'}
-                 },
-                {'parms':
-                     {'hierarchy': ['kernel', 'width'],
-                      'min': 1,
-                      'max': 5,
-                      'type': 'int'}
-                 },
-                {'parms':
-                     {'hierarchy': ['kernel', 'outchannels'],
-                      'min': 1,
-                      'max': 1,
-                      'type': 'int'}
-                 },
-                {'parms':
-                     {'hierarchy': ['strides', 'x'],
-                      'min': 1,
-                      'max': 5,
-                      'type': 'int'}
-                 },
-                {'parms':
-                     {'hierarchy': ['strides', 'y'],
-                      'min': 1,
-                      'max': 5,
-                      'type': 'int'}
-                 },
-                {'parms':
-                     {'hierarchy': ['strides', 'inchannels'],
-                      'min': 1,
-                      'max': 1,
-                      'type': 'int'}
-                 },
-                {'parms':
-                     {'hierarchy': ['strides', 'batch'],
-                      'min': 1,
-                      'max': 1,
-                      'type': 'int'}
-                 }
-            ],
-        'feedforward_layer':
-            [
-                {'parms':
-                     {'hierarchy': ['size'],
-                      'min': 256,
-                      'max': 2048,
-                      'type': 'int'}
-                 }
-            ]
+        'conv_layer':{
+            ('filter','height'):{
+                'min': 1,
+                'max': 5,
+                'type': RangedInt
+            },
+            ('filter','width'):{
+                'min': 1,
+                'max': 5,
+                'type': RangedInt
+            },
+            ('filter','outchannel'):{
+                'min': 1,
+                'max': 64,
+                'type': RangedInt
+            },
+            ('strides', 'x'): {
+                'min': 1,
+                'max': 2,
+                'type': RangedInt
+            },
+            ('strides', 'y'): {
+                'min': 1,
+                'max': 2,
+                'type': RangedInt
+            },
+            ('strides','inchannels'): {
+                'min': 1,
+                'max': 1,
+                'type': RangedInt
+            },
+            ('strides', 'batch'): {
+                'min': 1,
+                'max': 1,
+                'type': RangedInt
+            }
+        },
+        'maxpool_layer':{
+            ('kernel', 'height'): {
+                'min': 1,
+                'max': 5,
+                'type': RangedInt
+            },
+            ('kernel', 'width'): {
+                'min': 1,
+                'max': 5,
+                'type': RangedInt
+            },
+            ('kernel', 'outchannels'): {
+                'min': 1,
+                'max': 1,
+                'type': RangedInt
+            },
+            ('strides', 'x'): {
+                'min': 1,
+                'max': 5,
+                'type': RangedInt
+            },
+            ('strides', 'y'): {
+                'min': 1,
+                'max': 5,
+                'type': RangedInt
+            },
+            ('strides', 'inchannels'): {
+                'min': 1,
+                'max': 1,
+                'type': RangedInt
+            },
+            ('strides', 'batch'): {
+                'min': 1,
+                'max': 1,
+                'type': RangedInt
+            }
+        },
+        'feedforward_layer': {
+            ('size'): {
+                'min': 256,
+                'max': 2048,
+                'type': RangedInt
+            }
+        }
     }
-
     def __init__(self, candidate_id, start_time_str, runtime_spec, network_spec=None):
         self.runtime_spec = copy.deepcopy(runtime_spec)
 
@@ -274,15 +255,15 @@ class CandidateNN:
                 self.network_spec['layers'][i] = self._create_randomize_layer()
             else:
                 # Only mutate Values if no new random layer
-                self._mutate_layer_values(layer_dict=self.network_spec['layers'][i], mutation_rate=mutation_rate)
+                self._mutate_layer_values(layer_spec=self.network_spec['layers'][i], mutation_rate=mutation_rate)
 
-    def _mutate_layer_values(self, layer_dict, mutation_rate):
+    def _mutate_layer_values(self, layer_spec, mutation_rate):
         """
         Mutate each value of a layer with a probability of `mutation_rate`.
         """
         if random.uniform(0, 1) <= mutation_rate:
-            layer_dict['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
-        for parms in self.OPTIMIZING_PARMS[layer_dict['type']]:
+            layer_spec['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
+        for parms in self.OPTIMIZING_PARMS[layer_spec['type']]:
             if parms['parms']['max'] != parms['parms']['min']:
 
                 parm_h = parms['parms']['hierarchy']
@@ -293,16 +274,16 @@ class CandidateNN:
                     variance = int(variance)
 
                 if len(parm_h) == 1:
-                    layer_dict[parm_h[0]] = self._mutation_value_strategy(
-                        old_value=layer_dict[parm_h[0]],
+                    layer_spec[parm_h[0]] = self._mutation_value_strategy(
+                        old_value=layer_spec[parm_h[0]],
                         variance=variance)
                 elif len(parm_h) == 2:
-                    layer_dict[parm_h[0]][parm_h[1]] = self._mutation_value_strategy(
-                        old_value=layer_dict[parm_h[0]][parm_h[1]],
+                    layer_spec[parm_h[0]][parm_h[1]] = self._mutation_value_strategy(
+                        old_value=layer_spec[parm_h[0]][parm_h[1]],
                         variance=variance)
                 elif len(parm_h) == 3:
-                    layer_dict[parm_h[0]][parm_h[1]][parm_h[2]] = self._mutation_value_strategy(
-                        old_value=layer_dict[parm_h[0]][parm_h[1]][parm_h[2]],
+                    layer_spec[parm_h[0]][parm_h[1]][parm_h[2]] = self._mutation_value_strategy(
+                        old_value=layer_spec[parm_h[0]][parm_h[1]][parm_h[2]],
                         variance=variance)
                 else:
 
@@ -433,9 +414,9 @@ class CandidateNN:
 
         layer = {
             'type': 'feedforward_layer',
-            'size': RangedInt(
-                self.OPTIMIZING_PARMS['feedforward_layer'][0]['parms']['min'],
-                self.OPTIMIZING_PARMS['feedforward_layer'][0]['parms']['max']),
+            'size': self.OPTIMIZING_PARMS['feedforward_layer']['size']['type'](
+                        self.OPTIMIZING_PARMS['feedforward_layer']['size']['min'],
+                        self.OPTIMIZING_PARMS['feedforward_layer']['size']['max']),
             'activation_function': random.choice(self.ACTIVATION_CHOICES)
         }
         return layer
@@ -447,13 +428,23 @@ class CandidateNN:
         layer = {
             'type': 'conv_layer',
             'filter': {
-                'height': RangedInt(1, 5),
-                'width': RangedInt(1, 5),
-                'outchannels': RangedInt(1, 64)
+                'height': self.OPTIMIZING_PARMS['conv_layer']['strides','x']['type'](
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','height']['min'],
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','height']['max']),
+                'width': self.OPTIMIZING_PARMS['conv_layer']['strides','x']['type'](
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','width']['min'],
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','width']['max']),
+                'outchannels': self.OPTIMIZING_PARMS['conv_layer']['strides','x']['type'](
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','height']['min'],
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','outchannels']['max'])
             },
             'strides': {
-                'x': RangedInt(1, 2),
-                'y': RangedInt(1, 2),
+                'x': self.OPTIMIZING_PARMS['conv_layer']['strides','x']['type'](
+                        self.OPTIMIZING_PARMS['conv_layer']['strides','x']['min'],
+                        self.OPTIMIZING_PARMS['conv_layer']['strides','x']['max']),
+                'y': self.OPTIMIZING_PARMS['conv_layer']['strides','y']['type'](
+                        self.OPTIMIZING_PARMS['conv_layer']['strides','y']['min'],
+                        self.OPTIMIZING_PARMS['conv_layer']['strides','y']['max']),
                 'inchannels': 1,  # Must be 1. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
                 'batch': 1
             },
@@ -468,12 +459,18 @@ class CandidateNN:
         layer = {
             'type': 'maxpool_layer',
             'kernel': {
-                'height': RangedInt(1, 5),
-                'width': RangedInt(1, 5),
+                'height': RangedInt(
+                    self.OPTIMIZING_PARMS['maxpool_layer'][0]['parms']['min'],
+                    self.OPTIMIZING_PARMS['maxpool_layer'][0]['parms']['max']),
+                'width': RangedInt(
+                    self.OPTIMIZING_PARMS['maxpool_layer'][1]['parms']['min'],
+                    self.OPTIMIZING_PARMS['maxpool_layer'][1]['parms']['max']),
                 'outchannels': 1,
             },
             'strides': {
-                'y': RangedInt(1, 5),
+                'y': RangedInt(
+                    self.OPTIMIZING_PARMS['maxpool_layer'][4]['parms']['min'],
+                    self.OPTIMIZING_PARMS['maxpool_layer'][4]['parms']['max']),
                 'x': RangedInt(1, 5),
                 'inchannels': 1,
             # Must probably be 1 as well. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
