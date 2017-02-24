@@ -31,7 +31,7 @@ class CandidateNN:
                 'max': 5,
                 'type': RangedInt
             },
-            ('filter','outchannel'):{
+            ('filter','outchannels'):{
                 'min': 1,
                 'max': 64,
                 'type': RangedInt
@@ -369,7 +369,7 @@ class CandidateNN:
 
         layer = {
             'type': 'feedforward_layer',
-            'size': self.OPTIMIZING_PARMS['feedforward_layer']['type'](
+            'size': self.OPTIMIZING_PARMS['feedforward_layer']['size']['type'](
                         self.OPTIMIZING_PARMS['feedforward_layer']['size']['min'],
                         self.OPTIMIZING_PARMS['feedforward_layer']['size']['max']),
             'activation_function': random.choice(self.ACTIVATION_CHOICES)
