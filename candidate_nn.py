@@ -20,99 +20,88 @@ class CandidateNN:
     LAYER_CNT_WEIGHT = 2
     WEIGHTS_CNT_WEIGHT = 0.1
     OPTIMIZING_PARMS = {
-    'conv_layer': {
-        'filter': {
-            'height': {
+        'conv_layer':{
+            ('filter','height'):{
                 'min': 1,
                 'max': 5,
                 'type': RangedInt
             },
-            'width': {
+            ('filter','width'):{
                 'min': 1,
                 'max': 5,
                 'type': RangedInt
             },
-            'outchannels': {
+            ('filter','outchannels'):{
                 'min': 1,
                 'max': 64,
                 'type': RangedInt
             },
-        },
-        'strides': {
-            'x': {
+            ('strides', 'x'): {
                 'min': 1,
                 'max': 2,
                 'type': RangedInt
             },
-            'y': {
+            ('strides', 'y'): {
                 'min': 1,
                 'max': 2,
                 'type': RangedInt
             },
-            'inchannels': {
+            ('strides','inchannels'): {
                 'min': 1,
                 'max': 1,
                 'type': RangedInt
             },
-        },
-        'batch': {
-            'min': 1,
-            'max': 1,
-            'type': RangedInt
-        }
-    },
-    'maxpool_layer': {
-        'kernel': {
-            'height': {
-                'min': 1,
-                'max': 5,
-                'type': RangedInt
-            },
-            'width': {
-                'min': 1,
-                'max': 5,
-                'type': RangedInt
-            },
-            'outchannels': {
-                'min': 1,
-                'max': 1,
-                'type': RangedInt
-            },
-        },
-        'strides': {
-            'x': {
-                'min': 1,
-                'max': 5,
-                'type': RangedInt
-            },
-            'y': {
-                'min': 1,
-                'max': 5,
-                'type': RangedInt
-            },
-            'inchannels': {
-                'min': 1,
-                'max': 1,
-                'type': RangedInt
-            },
-            'batch': {
+            ('strides', 'batch'): {
                 'min': 1,
                 'max': 1,
                 'type': RangedInt
             }
-        }
-
-    },
-    'feedforward_layer': {
-        'size': {
-            'min': 256,
-            'max': 2048,
-            'type': RangedInt
+        },
+        'maxpool_layer':{
+            ('kernel', 'height'): {
+                'min': 1,
+                'max': 5,
+                'type': RangedInt
+            },
+            ('kernel', 'width'): {
+                'min': 1,
+                'max': 5,
+                'type': RangedInt
+            },
+            ('kernel', 'outchannels'): {
+                'min': 1,
+                'max': 1,
+                'type': RangedInt
+            },
+            ('strides', 'x'): {
+                'min': 1,
+                'max': 5,
+                'type': RangedInt
+            },
+            ('strides', 'y'): {
+                'min': 1,
+                'max': 5,
+                'type': RangedInt
+            },
+            ('strides', 'inchannels'): {
+                'min': 1,
+                'max': 1,
+                'type': RangedInt
+            },
+            ('strides', 'batch'): {
+                'min': 1,
+                'max': 1,
+                'type': RangedInt
+            }
+        },
+        'feedforward_layer': {
+            ('size'): {
+                'min': 256,
+                'max': 2048,
+                'type': RangedInt
+            }
         }
     }
-
-}
-
     def __init__(self, candidate_id, start_time_str, runtime_spec, network_spec=None):
         self.runtime_spec = copy.deepcopy(runtime_spec)
 
@@ -215,7 +204,7 @@ class CandidateNN:
                     # Get random index for insertion.
                     insertion_idx = random.randint(0, len(self.network_spec['layers']))
                     # Add random layer.
-                    self.network_spec['layers'].insert(insertion_idx, self._create_random_layer())
+                    self.network_spec['layers'].insert(insertion_idx, self._create_randomize_layer())
             else:
                 # Get random index for deletion.
                 deletion_idx = random.randint(0, len(self.network_spec['layers']) - 1)
@@ -226,7 +215,7 @@ class CandidateNN:
         for i, layer_spec in enumerate(self.network_spec['layers']):
             # Mutate complete layer.
             if flip_coin(mutation_rate / 10):
-                self.network_spec['layers'][i] = self._create_random_layer()
+                self.network_spec['layers'][i] = self._create_randomize_layer()
             else:
                 # Only mutate Values if no new random layer
                 self._mutate_layer_values(layer_spec=self.network_spec['layers'][i], mutation_rate=mutation_rate)
@@ -348,46 +337,104 @@ class CandidateNN:
         layer_types += ['feedforward_layer' for _ in range(cnt_layer_ff)]
 
         for layer_type in layer_types:
-            layer_spec = self._create_random_layer(layer_type=layer_type)
+            layer_spec = self._create_randomize_layer(layer_type=layer_type)
             # layer_spec = self._generate_network_layer(type=layer_type)
             # Add layer to the network spec.
             network_spec['layers'].append(layer_spec)
 
         return network_spec
 
-    def _create_random_layer(self, layer_type=None):
+    def _create_randomize_layer(self, layer_type=None):
         """
         Create a layer based on layer_type
         """
         if layer_type is None:
             layer_type = random.choice(self.LAYER_TYPES)
 
-        layer_skeleton = copy.deepcopy(self.OPTIMIZING_PARMS[layer_type])
-        layer_spec = self._traverse_param_spec(layer_skeleton)
-        print(layer_spec)
-
-    def _traverse_param_spec(self, param_spec):
-
-        if self._is_base_num_param(param_spec):
-            return self._resolve_param_spec(param_spec)
-        elif self._is_base_choice_param(param_spec):
-            return random.choice(param_spec)
+        if layer_type == 'conv_layer':
+            layer_spec = self._create_conv_layer()
+        elif layer_type == 'maxpool_layer':
+            layer_spec = self._create_maxpool_layer()
+        elif layer_type == 'feedforward_layer':
+            layer_spec = self._create_ff_layer()
         else:
-            resolved_spec = {}
-            for k, v in param_spec.items():
-                resolved_spec[k] = self._traverse_param_spec(v)
-        return resolved_spec
+            raise ValueError('Invalid layer type {}'.format(layer_type))
+        return layer_spec
 
-    def _resolve_param_spec(self, param_spec):
-        return param_spec['type'](param_spec['min'], param_spec['max'])
+    def _create_ff_layer(self):
+        """
+        Create dict for a random initialized Feedforward network
+        :return:
+        """
 
-    def _is_base_num_param(self, param_spec):
-        """Check whether a base parameter specification was found."""
-        return isinstance(param_spec, dict) and set(param_spec.keys()) == {'min', 'max', 'type'}
+        layer = {
+            'type': 'feedforward_layer',
+            'size': self.OPTIMIZING_PARMS['feedforward_layer']['size']['type'](
+                        self.OPTIMIZING_PARMS['feedforward_layer']['size']['min'],
+                        self.OPTIMIZING_PARMS['feedforward_layer']['size']['max']),
+            'activation_function': random.choice(self.ACTIVATION_CHOICES)
+        }
+        return layer
 
-    def _is_base_choice_param(self, param_spec):
+    def _create_conv_layer(self):
+        """
+        Create dict for a random initialized convolutional Layer
+        """
+        layer = {
+            'type': 'conv_layer',
+            'filter': {
+                'height': self.OPTIMIZING_PARMS['conv_layer']['filter','height']['type'](
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','height']['min'],
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','height']['max']),
+                'width': self.OPTIMIZING_PARMS['conv_layer']['filter','width']['type'](
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','width']['min'],
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','width']['max']),
+                'outchannels': self.OPTIMIZING_PARMS['conv_layer']['filter','outchannels']['type'](
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','outchannels']['min'],
+                    self.OPTIMIZING_PARMS['conv_layer']['filter','outchannels']['max'])
+            },
+            'strides': {
+                'x': self.OPTIMIZING_PARMS['conv_layer']['strides','x']['type'](
+                        self.OPTIMIZING_PARMS['conv_layer']['strides','x']['min'],
+                        self.OPTIMIZING_PARMS['conv_layer']['strides','x']['max']),
+                'y': self.OPTIMIZING_PARMS['conv_layer']['strides','y']['type'](
+                        self.OPTIMIZING_PARMS['conv_layer']['strides','y']['min'],
+                        self.OPTIMIZING_PARMS['conv_layer']['strides','y']['max']),
+                'inchannels': 1,  # Must be 1. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
+                'batch': 1
+            },
+            'activation_function': random.choice(self.ACTIVATION_CHOICES)
+        }
+        return layer
 
-        return isinstance(param_spec, tuple) or isinstance(param_spec, list)
+    def _create_maxpool_layer(self):
+        """
+        Create dict for a random initialized Maxpool-layer
+        """
+        layer = {
+            'type': 'maxpool_layer',
+            'kernel': {
+                'height': self.OPTIMIZING_PARMS['maxpool_layer']['kernel','height']['type'](
+                        self.OPTIMIZING_PARMS['maxpool_layer']['kernel','height']['min'],
+                        self.OPTIMIZING_PARMS['maxpool_layer']['kernel','height']['max']),
+                'width': self.OPTIMIZING_PARMS['maxpool_layer']['kernel','width']['type'](
+                        self.OPTIMIZING_PARMS['maxpool_layer']['kernel','width']['min'],
+                        self.OPTIMIZING_PARMS['maxpool_layer']['kernel','width']['max']),
+                'outchannels': 1,
+            },
+            'strides': {
+                'y': self.OPTIMIZING_PARMS['maxpool_layer']['strides','y']['type'](
+                        self.OPTIMIZING_PARMS['maxpool_layer']['strides','y']['min'],
+                        self.OPTIMIZING_PARMS['maxpool_layer']['strides','y']['max']),
+                'x': self.OPTIMIZING_PARMS['maxpool_layer']['strides','x']['type'](
+                        self.OPTIMIZING_PARMS['maxpool_layer']['strides','x']['min'],
+                        self.OPTIMIZING_PARMS['maxpool_layer']['strides','x']['max']),
+                'inchannels': 1,
+            # Must probably be 1 as well. See https://www.tensorflow.org/api_docs/python/tf/nn/conv2d
+                'batch': 1
+            }
+        }
+        return layer
 
     def _serialize_network_spec(self):
 
