@@ -32,7 +32,7 @@ class CandidateNN:
                 'max': 5,
                 'type': RangedInt
             },
-            'outchannel': {
+            'outchannels': {
                 'min': 1,
                 'max': 64,
                 'type': RangedInt
@@ -141,33 +141,6 @@ class CandidateNN:
         else:
             raise ValueError('not implemented crossover strategy')
 
-    def _crossover_uniform2(self, crossover_rate, other_candidate, uniform_method):
-        """Performs a unifrom Crossover between two Candidates"""
-        if uniform_method == 'swap':
-            min_layers = min(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
-            for layer_idx, layer in enumerate(self.network_spec['layers'][:min_layers]):
-                layer_dict = layer
-                other_layer_dict = other_candidate.network_spec['layers'][layer_idx]
-
-                # Cross whole layer
-                if flip_coin(crossover_rate / 5):
-                    tmp = copy.deepcopy(other_layer_dict)
-                    other_candidate.network_spec['layers'][layer_idx] = copy.deepcopy(layer)
-                    self.network_spec['layers'][layer_idx] = tmp
-                else:
-                    if ('activation_function' in layer_dict and
-                        'activation_function' in other_layer_dict and
-                        flip_coin(crossover_rate)):
-
-                        layer_dict['activation_function'] = other_layer_dict['activation_function']
-
-                    if layer_dict['type'] == other_layer_dict['type']:
-                        self._swap_values(layer_dict, other_layer_dict, crossover_rate)
-
-
-        else:
-            raise NotImplementedError('Not implemented uniform_crossover_method')
-
     def _crossover_uniform(self, crossover_rate, other_candidate, uniform_method):
         min_layers = min(len(self.network_spec['layers']), len(other_candidate.network_spec['layers']))
         num_layer_crossover = max(1, int(min_layers * crossover_rate))
@@ -180,7 +153,7 @@ class CandidateNN:
             if self.network_spec['layers'][layer_idx1]['type'] == other_candidate.network_spec['layers'][layer_idx2][
                 'type']:
                 # Make complete or parm cross
-                if flip_coin():  # Cross complete layer with lower probability
+                if flip_coin():
                     logging.info("crossing:sameType:layer")
                     tmp = self.network_spec['layers'][layer_idx1]
                     self.network_spec['layers'][layer_idx1] = other_candidate.network_spec['layers'][layer_idx2]
@@ -205,35 +178,24 @@ class CandidateNN:
 
     def _swap_values(self, dict, other_dict, rate):
         """Swaps Properties between two Layers of the same type with Propapility rate"""
-        for parm in self.OPTIMIZING_PARMS[dict['type']]:
+        for layer_key, layer_parm in self.OPTIMIZING_PARMS[dict['type']].items():
             if flip_coin(rate):
-                parm_h = parm['parms']['hierarchy']
-                if len(parm_h) == 1:
+                if len(layer_key) == 1:
                     # Save old own
-                    tmp = dict[parm_h[0]]
+                    tmp = dict[layer_key[0]]
                     # own in other
-                    dict[parm_h[0]] = \
-                        other_dict[parm_h[0]]
+                    dict[layer_key[0]] = other_dict[layer_key[0]]
                     # saved in own
-                    other_dict[parm_h[0]] = tmp
-                elif len(parm_h) == 2:
+                    other_dict[layer_key[0]] = tmp
+                elif len(layer_key) == 2:
                     # Save old own
-                    tmp = dict[parm_h[0]][parm_h[1]]
+                    tmp = dict[layer_key[0]][layer_key[1]]
                     # own in other
-                    dict[parm_h[0]][parm_h[1]] = \
-                        other_dict[parm_h[0]][parm_h[1]]
+                    dict[layer_key[0]][layer_key[1]] = other_dict[layer_key[0]][layer_key[1]]
                     # saved in own
-                    other_dict[parm_h[0]][parm_h[1]] = tmp
-                elif len(parm_h) == 3:
-                    # Save old own
-                    tmp = dict[parm_h[0]][parm_h[1]][parm_h[2]]
-                    # own in other
-                    dict[parm_h[0]][parm_h[1]][parm_h[2]] = \
-                        other_dict[parm_h[0]][parm_h[1]][parm_h[2]]
-                    # saved in own
-                    other_dict[parm_h[0]][parm_h[1]][parm_h[2]] = tmp
+                    other_dict[layer_key[0]][layer_key[1]] = tmp
                 else:
-                    raise ValueError('length of hierarchy must 1,2 or 3')
+                    raise ValueError('length of hierarchy must 1 or 2')
 
     def mutation(self, mutation_rate):
         # TODO: Check the mutation of a layer and the mutation of properties, layer mutation can hide value mutation
@@ -275,32 +237,27 @@ class CandidateNN:
         """
         if flip_coin(mutation_rate):
             layer_spec['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
-        for parms in self.OPTIMIZING_PARMS[layer_spec['type']]:
+        for layer_key, layer_parm, in self.OPTIMIZING_PARMS[layer_spec['type']].items():
 
-            if parms['parms']['max'] != parms['parms']['min']:
+            if layer_parm['max'] != layer_parm['min']:
 
-                parm_h = parms['parms']['hierarchy']
-                variance = (parms['parms']['max'] - parms['parms']['min']) / 2
+                variance = (layer_parm['max'] - layer_parm['min']) / 2
                 if variance == 0:
                     variance = 1
-                if parms['parms']['type'] == 'int':
-                    variance = int(variance)
+                if layer_parm['type'] is RangedInt:
+                    variance = round(variance,0)
 
-                if len(parm_h) == 1:
-                    layer_spec[parm_h[0]] = self._mutation_value_strategy(
-                        old_value=layer_spec[parm_h[0]],
+                if len(layer_key) == 1:
+                    layer_spec[layer_key[0]] = self._mutation_value_strategy(
+                        old_value=layer_spec[layer_key[0]],
                         variance=variance)
-                elif len(parm_h) == 2:
-                    layer_spec[parm_h[0]][parm_h[1]] = self._mutation_value_strategy(
-                        old_value=layer_spec[parm_h[0]][parm_h[1]],
-                        variance=variance)
-                elif len(parm_h) == 3:
-                    layer_spec[parm_h[0]][parm_h[1]][parm_h[2]] = self._mutation_value_strategy(
-                        old_value=layer_spec[parm_h[0]][parm_h[1]][parm_h[2]],
+                elif len(layer_key) == 2:
+                    layer_spec[layer_key[0]][layer_key[1]] = self._mutation_value_strategy(
+                        old_value=layer_spec[layer_key[0]][layer_key[1]],
                         variance=variance)
                 else:
 
-                    raise ValueError('length of hierarchy must 1,2 or 3')
+                    raise ValueError('length of hierarchy must 1 or 2')
 
     def _mutation_value_strategy(self, old_value, variance):
         """ sub/add a number between -variance and variance"""
@@ -319,23 +276,19 @@ class CandidateNN:
                 # make deeper compare
                 mutable_parms = 0
                 div_parms = 0
-                for parms in self.OPTIMIZING_PARMS[layer_dict['type']]:
-                    if parms['parms']['max'] == parms['parms']['min']:  # don't check on not mutable parms
+                for layer_key, layer_parm in self.OPTIMIZING_PARMS[layer_dict['type']].items():
+                    if layer_parm['max'] == layer_parm['min']:  # don't check on not mutable parms
                         break
                     mutable_parms += 1
-                    parm_h = parms['parms']['hierarchy']
-                    if len(parm_h) == 1:
-                        if layer_dict[parm_h[0]] != other_layer_dict[parm_h[0]]:
+                    if len(layer_key) == 1:
+                        if layer_dict[layer_key[0]] != other_layer_dict[layer_key[0]]:
                             div_parms += 1
-                    elif len(parm_h) == 2:
-                        if layer_dict[parm_h[0]][parm_h[1]] != other_layer_dict[parm_h[0]][parm_h[1]]:
-                            div_parms += 1
-                    elif len(parm_h) == 3:
-                        if layer_dict[parm_h[0]][parm_h[1]][parm_h[2]] != other_layer_dict[parm_h[0]][parm_h[1]][parm_h[2]]:
+                    elif len(layer_key) == 2:
+                        if layer_dict[layer_key[0]][layer_key[1]] != other_layer_dict[layer_key[0]][layer_key[1]]:
                             div_parms += 1
                     else:
 
-                        raise ValueError('length of hierarchy must 1,2 or 3')
+                        raise ValueError('length of hierarchy must 1 or 2')
                 div += (div_parms / mutable_parms)
             else:
                 div += 1
