@@ -334,7 +334,7 @@ class CandidateNN:
     def get_fitness(self, ):
         """Get fitness of the candidate. If not yet tested, test the fitness based on the network specificaton."""
         if self._fitness is None:
-            network = Network(self._serialze_network_spec())
+            network = Network(self._serialize_network_spec())
             extended_spec_json = network.evaluate()
             extended_spec = json.loads(extended_spec_json)
             result_spec = extended_spec['results']
@@ -483,6 +483,6 @@ class CandidateNN:
         }
         return layer
 
-    def _serialze_network_spec(self):
+    def _serialize_network_spec(self):
 
         return RangedJSONEncoder().encode(self.network_spec)
