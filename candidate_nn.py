@@ -1,6 +1,6 @@
 import json
 import random
-from utils import RangedNum, RangedInt, RangedJSONEncoder
+from utils import RangedNum, RangedInt, RangedJSONEncoder, flip_coin
 from builder.network_builder import Network
 import os
 import math
@@ -139,7 +139,7 @@ class CandidateNN:
         self.network_spec = network_spec
 
     def to_next_generation(self, generation):
-
+        """Transfer the candidate to the next generation."""
         generation_dir = 'generation_{}/'.format(generation)
         id_dir = '{}/'.format(self._candidate_id)
         self.runtime_spec['logdir'] = os.path.join(self._base_logdir, generation_dir, id_dir)
@@ -164,14 +164,14 @@ class CandidateNN:
                 other_layer_dict = other_candidate.network_spec['layers'][layer_idx]
 
                 # Cross whole layer
-                if random.uniform(0, 1) <= crossover_rate / 5:
+                if flip_coin(crossover_rate / 5):
                     tmp = copy.deepcopy(other_layer_dict)
                     other_candidate.network_spec['layers'][layer_idx] = copy.deepcopy(layer)
                     self.network_spec['layers'][layer_idx] = tmp
                 else:
                     if ('activation_function' in layer_dict and
                         'activation_function' in other_layer_dict and
-                        random.uniform(0, 1) <= crossover_rate):
+                        flip_coin(crossover_rate)):
 
                         layer_dict['activation_function'] = other_layer_dict['activation_function']
 
@@ -194,7 +194,7 @@ class CandidateNN:
             if self.network_spec['layers'][layer_idx1]['type'] == other_candidate.network_spec['layers'][layer_idx2][
                 'type']:
                 # Make complete or parm cross
-                if (random.uniform(0, 1) <= 0.5):  # Cross complete layer with lower probability
+                if flip_coin():  # Cross complete layer with lower probability
                     logging.info("crossing:sameType:layer")
                     tmp = self.network_spec['layers'][layer_idx1]
                     self.network_spec['layers'][layer_idx1] = other_candidate.network_spec['layers'][layer_idx2]
@@ -207,7 +207,8 @@ class CandidateNN:
                     # Cross activation functino
                     if ('activation_function' in self.network_spec['layers'][layer_idx1]
                         and 'activation_function' in other_candidate.network_spec['layers'][layer_idx2]
-                        and random.uniform(0, 1) <= crossover_rate):
+                        and flip_coin(crossover_rate)):
+
                         self.network_spec['layers'][layer_idx1]['activation_function'] \
                             = other_candidate.network_spec['layers'][layer_idx2]['activation_function']
             else:  # not the same, swap layer
@@ -219,7 +220,7 @@ class CandidateNN:
     def _swap_values(self, dict, other_dict, rate):
         """Swaps Properties between two Layers of the same type with Propapility rate"""
         for parm in self.OPTIMIZING_PARMS[dict['type']]:
-            if random.uniform(0, 1) <= rate:
+            if flip_coin(rate):
                 parm_h = parm['parms']['hierarchy']
                 if len(parm_h) == 1:
                     # Save old own
@@ -258,8 +259,8 @@ class CandidateNN:
 
         # Determine whether to change number of layers.
 
-        if random.uniform(0, 1) <= mutation_rate:
-            if random.uniform(0, 1) <= 0.5:
+        if flip_coin(mutation_rate):
+            if flip_coin():
 
                 if len(self.network_spec['layers']) < self.runtime_spec['max_layer']:
 
@@ -275,18 +276,18 @@ class CandidateNN:
 
         # Mutate layer
         for i, layer_spec in enumerate(self.network_spec['layers']):
-            # Mutate complete layer
-            if random.uniform(0, 1) <= (mutation_rate / 10):
+            # Mutate complete layer.
+            if flip_coin(mutation_rate / 10):
                 self.network_spec['layers'][i] = self._create_randomize_layer()
             else:
-                # Only mutate Values if no new random layer
+                # Only mutate values if no new random layer
                 self._mutate_layer_values(layer_dict=self.network_spec['layers'][i], mutation_rate=mutation_rate)
 
     def _mutate_layer_values(self, layer_dict, mutation_rate):
         """
         Mutate each value of a layer with a probability of `mutation_rate`.
         """
-        if random.uniform(0, 1) <= mutation_rate:
+        if flip_coin(mutation_rate):
             layer_dict['activation_function'] = random.choice(self.ACTIVATION_CHOICES)
         for parms in self.OPTIMIZING_PARMS[layer_dict['type']]:
             if parms['parms']['max'] != parms['parms']['min']:
