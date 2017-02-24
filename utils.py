@@ -76,3 +76,7 @@ class RangedJSONEncoder(JSONEncoder):
         if isinstance(o, RangedNum) or isinstance(o, RangedInt):
             return o.value
         return super().default(o)
+
+def flip_coin(bias=0.5):
+    """Flip a biased coin."""
+    return random.random() <= bias
